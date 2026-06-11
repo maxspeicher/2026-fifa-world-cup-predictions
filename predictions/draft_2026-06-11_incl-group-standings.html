@@ -1,0 +1,602 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Predicted Group Standings | FIFA World Cup 2026</title>
+<style>
+:root {
+  --bg: #f4f1eb;
+  --card: #ffffff;
+  --text: #1a1a1a;
+  --muted: #6b6560;
+  --border: #e2dfd9;
+  --qualify: #1a6b3c;
+  --qualify-bg: #e8f5ec;
+  --maybe: #8b6914;
+  --maybe-bg: #fdf6e3;
+  --out-bg: #f8f6f3;
+  --accent: #8b1538;
+  --accent-light: #fdf0f3;
+  --high: #c4421a;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Hero */
+.hero {
+  padding: 48px 24px 32px;
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.hero-eyebrow {
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+.hero h1 {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(28px, 5vw, 42px);
+  font-weight: 400;
+  line-height: 1.15;
+  margin-bottom: 14px;
+  letter-spacing: -0.5px;
+}
+.hero h1 em {
+  font-style: italic;
+  color: var(--accent);
+}
+.hero-sub {
+  font-size: 14px;
+  color: var(--muted);
+  max-width: 560px;
+  margin: 0 auto 24px;
+}
+.hero-stats {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+.hero-stat {
+  text-align: center;
+}
+.hero-stat-val {
+  font-family: Georgia, serif;
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--text);
+}
+.hero-stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+}
+
+/* Legend */
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 12px 24px 24px;
+  font-size: 12px;
+  color: var(--muted);
+  flex-wrap: wrap;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+.legend-dot.q { background: var(--qualify); }
+.legend-dot.m { background: var(--maybe); }
+.legend-dot.o { background: #b0aaa2; }
+
+/* Grid */
+.groups-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
+  gap: 20px;
+  padding: 0 24px 80px;
+  max-width: 1360px;
+  margin: 0 auto;
+}
+
+/* Card */
+.group-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.group-label {
+  font-family: Georgia, serif;
+  font-size: 18px;
+  font-weight: 400;
+}
+.group-label span {
+  color: var(--muted);
+  font-size: 13px;
+  font-family: system-ui, sans-serif;
+  margin-left: 6px;
+}
+
+/* Standings table */
+.standings {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.standings th {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+  font-weight: 500;
+  padding: 8px 6px 6px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.standings th:first-child { padding-left: 16px; width: 24px; }
+.standings th.r { text-align: right; padding-right: 16px; }
+.standings td {
+  padding: 9px 6px;
+  border-bottom: 1px solid #f0eeea;
+  vertical-align: middle;
+}
+.standings tr:last-child td { border-bottom: none; }
+.standings td:first-child {
+  padding-left: 16px;
+  font-size: 11px;
+  color: var(--muted);
+  width: 24px;
+}
+.standings td.r {
+  text-align: right;
+  padding-right: 16px;
+  font-feature-settings: 'tnum';
+  font-variant-numeric: tabular-nums;
+}
+.standings .team-cell {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.standings .flag { font-size: 16px; line-height: 1; }
+.standings .team-name {
+  font-weight: 500;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+.standings .xpts {
+  font-weight: 600;
+  font-size: 14px;
+  font-feature-settings: 'tnum';
+}
+.standings .xgd { font-feature-settings: 'tnum'; }
+.standings .xgd.pos { color: var(--qualify); }
+.standings .xgd.neg { color: var(--high); }
+
+/* Row highlights */
+.standings tr.pos-1, .standings tr.pos-2 { background: var(--qualify-bg); }
+.standings tr.pos-3 { background: var(--maybe-bg); }
+.standings tr.pos-4 { background: var(--out-bg); }
+
+.pos-marker {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 1px;
+  margin-right: 2px;
+  vertical-align: middle;
+}
+.pos-marker.q { background: var(--qualify); }
+.pos-marker.m { background: var(--maybe); }
+
+/* Match details toggle */
+.matches-toggle {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  background: #faf9f7;
+  border: none;
+  border-top: 1px solid var(--border);
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-family: inherit;
+  text-align: center;
+  transition: background 0.15s;
+}
+.matches-toggle:hover { background: #f0eeea; }
+.matches-toggle::after { content: ' ▾'; }
+.matches-toggle.open::after { content: ' ▴'; }
+
+/* Match list */
+.match-list {
+  display: none;
+  padding: 0 16px 12px;
+  background: #faf9f7;
+}
+.match-list.open { display: block; }
+.match-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #eeece7;
+  font-size: 12px;
+  gap: 8px;
+}
+.match-row:last-child { border-bottom: none; }
+.match-team {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.match-team.away { justify-content: flex-end; text-align: right; }
+.match-team .mflag { font-size: 14px; }
+.match-team .mname { font-weight: 500; font-size: 12px; }
+.match-xg {
+  text-align: center;
+  font-feature-settings: 'tnum';
+  font-variant-numeric: tabular-nums;
+  min-width: 90px;
+}
+.match-xg .xg-vals {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+.match-xg .xg-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+}
+.match-xg .xg-result {
+  font-size: 10px;
+  margin-top: 2px;
+  color: var(--muted);
+}
+.match-md {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 10px 0 4px;
+  font-weight: 500;
+}
+
+/* Method note */
+.method-note {
+  max-width: 680px;
+  margin: 0 auto 80px;
+  padding: 24px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.method-note strong { color: var(--text); font-weight: 500; }
+.method-note a { color: var(--accent); text-decoration: none; }
+
+/* Responsive */
+@media (max-width: 480px) {
+  .hero { padding: 32px 16px 20px; }
+  .groups-grid { padding: 0 12px 80px; gap: 14px; }
+  .standings .team-name { max-width: 90px; }
+  .hero-stats { gap: 20px; }
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-eyebrow">FIFA World Cup 2026</div>
+  <h1>Predicted Group <em>Standings</em></h1>
+  <p class="hero-sub">Expected points and final positions for all 12 groups, derived from Poisson win/draw/loss probabilities applied to the predicted xG for every match</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="hero-stat-val">48</div><div class="hero-stat-label">Teams</div></div>
+    <div class="hero-stat"><div class="hero-stat-val">12</div><div class="hero-stat-label">Groups</div></div>
+    <div class="hero-stat"><div class="hero-stat-val">72</div><div class="hero-stat-label">Matches</div></div>
+    <div class="hero-stat"><div class="hero-stat-val">32</div><div class="hero-stat-label">Advance</div></div>
+  </div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot q"></div> Qualifies (1st/2nd)</div>
+  <div class="legend-item"><div class="legend-dot m"></div> Potential qualifier (3rd)</div>
+  <div class="legend-item"><div class="legend-dot o"></div> Eliminated (4th)</div>
+</div>
+
+<div class="groups-grid" id="groupsGrid"></div>
+
+<div class="method-note">
+  <strong>How expected points work:</strong> Each team's xG per match is fed into independent Poisson distributions to produce win/draw/loss probabilities. Expected points = 3×P(win) + 1×P(draw). The top 2 in each group advance automatically; 8 of 12 third-placed teams also qualify.<br><br>
+  xG data from the companion <strong>Predicted xGoals</strong> tracker, sourced from qualifying xG (xGscore.io), editorial predictions (ESPN, Big D Soccer, Bleacher Report), market odds (FanDuel, Polymarket), historical tournament adjustments, and opponent-adjusted defensive calibration.
+</div>
+
+<script>
+// ── Flag map ──
+const FLAGS = {
+  'Argentina':'🇦🇷','Algeria':'🇩🇿','Austria':'🇦🇹','Jordan':'🇯🇴',
+  'Mexico':'🇲🇽','South Africa':'🇿🇦','South Korea':'🇰🇷','Czechia':'🇨🇿',
+  'Canada':'🇨🇦','Bosnia & Herzegovina':'🇧🇦','Qatar':'🇶🇦','Switzerland':'🇨🇭',
+  'Brazil':'🇧🇷','Morocco':'🇲🇦','Haiti':'🇭🇹','Scotland':'🏴󠁧󠁢󠁳󠁣󠁴󠁿',
+  'United States':'🇺🇸','Paraguay':'🇵🇾','Türkiye':'🇹🇷','Australia':'🇦🇺',
+  'Germany':'🇩🇪','Curaçao':'🇨🇼','Ivory Coast':'🇨🇮','Ecuador':'🇪🇨',
+  'Netherlands':'🇳🇱','Japan':'🇯🇵','Sweden':'🇸🇪','Tunisia':'🇹🇳',
+  'Belgium':'🇧🇪','Egypt':'🇪🇬','Iran':'🇮🇷','New Zealand':'🇳🇿',
+  'Spain':'🇪🇸','Cape Verde':'🇨🇻','Saudi Arabia':'🇸🇦','Uruguay':'🇺🇾',
+  'France':'🇫🇷','Senegal':'🇸🇳','Iraq':'🇮🇶','Norway':'🇳🇴',
+  'Portugal':'🇵🇹','DR Congo':'🇨🇩','Uzbekistan':'🇺🇿','Colombia':'🇨🇴',
+  'England':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','Croatia':'🇭🇷','Ghana':'🇬🇭','Panama':'🇵🇦',
+};
+
+// ── All 72 matches with predicted xG ──
+// Format: [group, matchday, home, away, home_xG, away_xG]
+const MATCHES = [
+  // Group A
+  ['A',1,'Mexico','South Africa',1.82,0.65],
+  ['A',1,'South Korea','Czechia',1.15,1.08],
+  ['A',2,'Czechia','South Africa',1.55,0.72],
+  ['A',2,'Mexico','South Korea',1.42,1.18],
+  ['A',3,'Czechia','Mexico',1.05,1.52],
+  ['A',3,'South Africa','South Korea',0.72,1.48],
+  // Group B
+  ['B',1,'Canada','Bosnia & Herzegovina',1.58,0.92],
+  ['B',1,'Qatar','Switzerland',0.58,1.90],
+  ['B',2,'Switzerland','Bosnia & Herzegovina',1.45,0.88],
+  ['B',2,'Canada','Qatar',2.10,0.48],
+  ['B',3,'Switzerland','Canada',1.28,1.25],
+  ['B',3,'Bosnia & Herzegovina','Qatar',1.55,0.62],
+  // Group C
+  ['C',1,'Brazil','Morocco',1.95,1.12],
+  ['C',1,'Haiti','Scotland',0.52,1.65],
+  ['C',2,'Scotland','Morocco',0.78,1.55],
+  ['C',2,'Brazil','Haiti',3.15,0.28],
+  ['C',3,'Scotland','Brazil',0.58,2.25],
+  ['C',3,'Morocco','Haiti',2.18,0.35],
+  // Group D
+  ['D',1,'United States','Paraguay',1.72,0.78],
+  ['D',1,'Australia','Türkiye',0.95,1.28],
+  ['D',2,'United States','Australia',1.65,0.82],
+  ['D',2,'Türkiye','Paraguay',1.35,0.78],
+  ['D',3,'Türkiye','United States',1.15,1.42],
+  ['D',3,'Paraguay','Australia',1.12,0.95],
+  // Group E
+  ['E',1,'Germany','Curaçao',3.20,0.35],
+  ['E',1,'Ivory Coast','Ecuador',1.10,1.15],
+  ['E',2,'Germany','Ivory Coast',2.15,0.78],
+  ['E',2,'Ecuador','Curaçao',2.35,0.42],
+  ['E',3,'Ecuador','Germany',0.92,1.78],
+  ['E',3,'Curaçao','Ivory Coast',0.38,2.08],
+  // Group F
+  ['F',1,'Netherlands','Japan',1.68,1.25],
+  ['F',1,'Sweden','Tunisia',1.45,0.82],
+  ['F',2,'Netherlands','Sweden',1.72,1.05],
+  ['F',2,'Tunisia','Japan',0.72,1.62],
+  ['F',3,'Japan','Sweden',1.35,1.18],
+  ['F',3,'Tunisia','Netherlands',0.58,1.92],
+  // Group G
+  ['G',1,'Belgium','Egypt',1.52,0.95],
+  ['G',1,'Iran','New Zealand',1.38,0.68],
+  ['G',2,'Belgium','Iran',1.72,0.68],
+  ['G',2,'New Zealand','Egypt',0.62,1.42],
+  ['G',3,'Egypt','Iran',1.18,0.85],
+  ['G',3,'New Zealand','Belgium',0.45,2.15],
+  // Group H
+  ['H',1,'Spain','Cape Verde',2.85,0.38],
+  ['H',1,'Saudi Arabia','Uruguay',0.62,1.85],
+  ['H',2,'Spain','Saudi Arabia',2.55,0.45],
+  ['H',2,'Uruguay','Cape Verde',2.28,0.38],
+  ['H',3,'Cape Verde','Saudi Arabia',0.85,0.92],
+  ['H',3,'Uruguay','Spain',1.08,1.72],
+  // Group I
+  ['I',1,'France','Senegal',2.10,0.82],
+  ['I',1,'Iraq','Norway',0.72,2.05],
+  ['I',2,'France','Iraq',2.48,0.42],
+  ['I',2,'Norway','Senegal',1.85,0.92],
+  ['I',3,'Norway','France',1.42,1.55],
+  ['I',3,'Senegal','Iraq',1.62,0.55],
+  // Group J
+  ['J',1,'Argentina','Algeria',2.25,0.68],
+  ['J',1,'Austria','Jordan',1.72,0.58],
+  ['J',2,'Argentina','Austria',1.95,0.85],
+  ['J',2,'Jordan','Algeria',0.72,1.08],
+  ['J',3,'Algeria','Austria',0.82,1.48],
+  ['J',3,'Jordan','Argentina',0.38,2.35],
+  // Group K
+  ['K',1,'Portugal','DR Congo',2.45,0.55],
+  ['K',1,'Uzbekistan','Colombia',0.68,1.92],
+  ['K',2,'Portugal','Uzbekistan',2.35,0.52],
+  ['K',2,'Colombia','DR Congo',2.02,0.58],
+  ['K',3,'Colombia','Portugal',1.28,1.45],
+  ['K',3,'DR Congo','Uzbekistan',1.15,0.82],
+  // Group L
+  ['L',1,'England','Croatia',1.78,1.15],
+  ['L',1,'Ghana','Panama',1.22,0.85],
+  ['L',2,'England','Ghana',2.18,0.62],
+  ['L',2,'Panama','Croatia',0.55,1.85],
+  ['L',3,'Panama','England',0.42,2.08],
+  ['L',3,'Croatia','Ghana',1.72,0.78],
+];
+
+// ── Poisson math ──
+function factorial(n) {
+  let r = 1; for (let i = 2; i <= n; i++) r *= i; return r;
+}
+function poissonPmf(k, lam) {
+  if (lam <= 0) return k === 0 ? 1 : 0;
+  return Math.exp(-lam) * Math.pow(lam, k) / factorial(k);
+}
+function matchProbs(xgHome, xgAway, maxG = 7) {
+  let pWin = 0, pDraw = 0, pLoss = 0;
+  for (let i = 0; i <= maxG; i++) {
+    const pi = poissonPmf(i, xgHome);
+    for (let j = 0; j <= maxG; j++) {
+      const pj = poissonPmf(j, xgAway);
+      const p = pi * pj;
+      if (i > j) pWin += p;
+      else if (i === j) pDraw += p;
+      else pLoss += p;
+    }
+  }
+  // Renormalize after truncation
+  const total = pWin + pDraw + pLoss;
+  return { win: pWin/total, draw: pDraw/total, loss: pLoss/total };
+}
+
+// ── Compute group standings ──
+function computeStandings() {
+  const groups = {};
+  // Initialize teams
+  MATCHES.forEach(([g, md, home, away]) => {
+    if (!groups[g]) groups[g] = {};
+    if (!groups[g][home]) groups[g][home] = { xPts:0, xGF:0, xGA:0, pW:0, pD:0, pL:0 };
+    if (!groups[g][away]) groups[g][away] = { xPts:0, xGF:0, xGA:0, pW:0, pD:0, pL:0 };
+  });
+  // Process matches
+  MATCHES.forEach(([g, md, home, away, xgH, xgA]) => {
+    const p = matchProbs(xgH, xgA);
+    const h = groups[g][home];
+    const a = groups[g][away];
+    // Home team
+    h.xPts += 3 * p.win + 1 * p.draw;
+    h.xGF += xgH;
+    h.xGA += xgA;
+    h.pW += p.win;
+    h.pD += p.draw;
+    h.pL += p.loss;
+    // Away team
+    a.xPts += 3 * p.loss + 1 * p.draw;
+    a.xGF += xgA;
+    a.xGA += xgH;
+    a.pW += p.loss;
+    a.pD += p.draw;
+    a.pL += p.win;
+  });
+  // Sort each group
+  const result = {};
+  Object.keys(groups).sort().forEach(g => {
+    const teams = Object.entries(groups[g]).map(([name, s]) => ({
+      name, ...s, xGD: s.xGF - s.xGA
+    }));
+    teams.sort((a, b) => {
+      if (Math.abs(b.xPts - a.xPts) > 0.01) return b.xPts - a.xPts;
+      if (Math.abs(b.xGD - a.xGD) > 0.01) return b.xGD - a.xGD;
+      return b.xGF - a.xGF;
+    });
+    result[g] = teams;
+  });
+  return result;
+}
+
+// ── Render ──
+function render() {
+  const standings = computeStandings();
+  const grid = document.getElementById('groupsGrid');
+  const groupOrder = 'ABCDEFGHIJKL'.split('');
+
+  groupOrder.forEach(g => {
+    const teams = standings[g];
+    const matches = MATCHES.filter(m => m[0] === g);
+    const card = document.createElement('div');
+    card.className = 'group-card';
+
+    // Header
+    const winner = teams[0];
+    card.innerHTML = `
+      <div class="group-header">
+        <div class="group-label">Group ${g}</div>
+      </div>
+      <table class="standings">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Team</th>
+            <th class="r">xPts</th>
+            <th class="r">xGD</th>
+            <th class="r">xGF</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${teams.map((t, i) => {
+            const posClass = i < 2 ? 'pos-'+(i+1) : i === 2 ? 'pos-3' : 'pos-4';
+            const marker = i < 2 ? '<span class="pos-marker q"></span>' : i === 2 ? '<span class="pos-marker m"></span>' : '';
+            const gdSign = t.xGD >= 0 ? '+' : '';
+            const gdClass = t.xGD >= 0 ? 'pos' : 'neg';
+            return `<tr class="${posClass}">
+              <td>${marker}${i+1}</td>
+              <td><div class="team-cell"><span class="flag">${FLAGS[t.name]||''}</span><span class="team-name">${t.name}</span></div></td>
+              <td class="r"><span class="xpts">${t.xPts.toFixed(1)}</span></td>
+              <td class="r"><span class="xgd ${gdClass}">${gdSign}${t.xGD.toFixed(1)}</span></td>
+              <td class="r">${t.xGF.toFixed(1)}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+      <button class="matches-toggle" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">
+        Match predictions
+      </button>
+      <div class="match-list">
+        ${[1,2,3].map(md => {
+          const mdMatches = matches.filter(m => m[1] === md);
+          return `<div class="match-md">Matchday ${md}</div>` +
+            mdMatches.map(([,, home, away, xgH, xgA]) => {
+              const p = matchProbs(xgH, xgA);
+              let resultText = '';
+              if (p.win > p.draw && p.win > p.loss) resultText = `${Math.round(xgH)}–${Math.round(xgA)}`;
+              else if (p.loss > p.draw) resultText = `${Math.round(xgH)}–${Math.round(xgA)}`;
+              else resultText = `${Math.round(xgH)}–${Math.round(xgA)}`;
+              return `<div class="match-row">
+                <div class="match-team"><span class="mflag">${FLAGS[home]||''}</span><span class="mname">${home}</span></div>
+                <div class="match-xg">
+                  <div class="xg-vals">${xgH.toFixed(2)} — ${xgA.toFixed(2)}</div>
+                  <div class="xg-label">predicted xG</div>
+                  <div class="xg-result">W ${(p.win*100).toFixed(0)}% · D ${(p.draw*100).toFixed(0)}% · L ${(p.loss*100).toFixed(0)}%</div>
+                </div>
+                <div class="match-team away"><span class="mname">${away}</span><span class="mflag">${FLAGS[away]||''}</span></div>
+              </div>`;
+            }).join('');
+        }).join('')}
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+render();
+</script>
+</body>
+</html>
