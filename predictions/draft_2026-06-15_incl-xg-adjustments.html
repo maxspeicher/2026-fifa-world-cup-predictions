@@ -1,0 +1,1053 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World Cup 2026 Predictor</title>
+<style>
+:root {
+  --bg: #f4f1eb; --card: #fff; --text: #1a1a1a; --muted: #6b6560;
+  --border: #e2dfd9; --qualify: #1a6b3c; --qualify-bg: #e8f5ec;
+  --maybe: #8b6914; --maybe-bg: #fdf6e3; --out-bg: #f8f6f3;
+  --accent: #8b1538; --high: #c4421a; --navy: #1b2838;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased}
+
+.hero{padding:48px 24px 28px;text-align:center;max-width:900px;margin:0 auto}
+.hero-eyebrow{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;font-weight:500}
+.hero h1{font-family:Georgia,'Times New Roman',serif;font-size:clamp(28px,5vw,42px);font-weight:400;line-height:1.15;margin-bottom:14px;letter-spacing:-.5px}
+.hero h1 em{font-style:italic;color:var(--accent)}
+.hero-sub{font-size:14px;color:var(--muted);max-width:560px;margin:0 auto 24px}
+.hero-stats{display:flex;justify-content:center;gap:32px;flex-wrap:wrap}
+.hero-stat-val{font-family:Georgia,serif;font-size:28px;font-weight:400}
+.hero-stat-label{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted)}
+
+/* Tournament predictions */
+.predictions{max-width:900px;margin:0 auto 32px;padding:0 24px}
+.pred-section{margin-bottom:24px}
+.pred-title{font-family:Georgia,serif;font-size:20px;font-weight:400;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+
+/* Winner card */
+.winner-card{background:var(--navy);color:#fff;border-radius:8px;padding:28px 32px;text-align:center;margin-bottom:24px}
+.winner-label{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:8px}
+.winner-team{font-family:Georgia,serif;font-size:32px;font-weight:400;margin-bottom:4px}
+.winner-flag{font-size:48px;line-height:1;margin-bottom:8px;display:block}
+.winner-pct{font-size:14px;color:rgba(255,255,255,.7)}
+
+/* Final card */
+.final-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px 24px;margin-bottom:24px;text-align:center}
+.final-label{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.final-matchup{display:flex;align-items:center;justify-content:center;gap:16px;font-family:Georgia,serif;font-size:20px}
+.final-vs{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:2px}
+.final-pct{font-size:12px;color:var(--muted);margin-top:6px}
+
+/* (removed unused prob-list and sf-combo styles) */
+
+/* Section divider */
+.section-divider{max-width:900px;margin:8px auto 28px;padding:0 24px}
+.section-divider hr{border:none;border-top:1px solid var(--border)}
+
+/* Legend */
+.legend{display:flex;justify-content:center;gap:20px;padding:12px 24px 24px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:6px}
+.legend-dot{width:10px;height:10px;border-radius:2px}
+.legend-dot.q{background:var(--qualify)}.legend-dot.m{background:var(--maybe)}.legend-dot.o{background:#b0aaa2}
+
+/* Groups grid */
+.groups-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,420px),1fr));gap:20px;padding:0 24px 32px;max-width:1360px;margin:0 auto}
+.group-card{background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.group-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;border-bottom:1px solid var(--border)}
+.group-label{font-family:Georgia,serif;font-size:18px;font-weight:400}
+
+.standings{width:100%;border-collapse:collapse;font-size:13px}
+.standings th{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:500;padding:8px 6px 6px;text-align:left;border-bottom:1px solid var(--border)}
+.standings th:first-child{padding-left:16px;width:24px}
+.standings th.r{text-align:right;padding-right:16px}
+.standings td{padding:9px 6px;border-bottom:1px solid #f0eeea;vertical-align:middle}
+.standings tr:last-child td{border-bottom:none}
+.standings td:first-child{padding-left:16px;font-size:11px;color:var(--muted);width:24px}
+.standings td.r{text-align:right;padding-right:16px;font-feature-settings:'tnum';font-variant-numeric:tabular-nums}
+.standings .team-cell{display:flex;align-items:center;gap:7px}
+.standings .flag{font-size:16px;line-height:1}
+.standings .team-name{font-weight:500;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px}
+.standings .xpts{font-weight:600;font-size:14px;font-feature-settings:'tnum'}
+.standings .xgd{font-feature-settings:'tnum'}
+.standings .xgd.pos{color:var(--qualify)}.standings .xgd.neg{color:var(--high)}
+.standings tr.pos-1,.standings tr.pos-2{background:var(--qualify-bg)}
+.standings tr.pos-3{background:var(--maybe-bg)}
+.standings tr.pos-4{background:var(--out-bg)}
+.pos-marker{display:inline-block;width:6px;height:6px;border-radius:1px;margin-right:2px;vertical-align:middle}
+.pos-marker.q{background:var(--qualify)}.pos-marker.m{background:var(--maybe)}
+
+.matches-toggle{display:block;width:100%;padding:10px 16px;background:#faf9f7;border:none;border-top:1px solid var(--border);cursor:pointer;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;font-family:inherit;text-align:center;transition:background .15s}
+.matches-toggle:hover{background:#f0eeea}
+.matches-toggle::after{content:' ▾'}.matches-toggle.open::after{content:' ▴'}
+.match-list{display:none;padding:0 16px 12px;background:#faf9f7}
+.match-list.open{display:block}
+.match-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:8px 0;border-bottom:1px solid #eeece7;font-size:12px;gap:8px}
+.match-row:last-child{border-bottom:none}
+.match-team{display:flex;align-items:center;gap:5px}
+.match-team.away{justify-content:flex-end;text-align:right}
+.match-team .mflag{font-size:14px}.match-team .mname{font-weight:500;font-size:12px}
+.match-xg{text-align:center;font-feature-settings:'tnum';font-variant-numeric:tabular-nums;min-width:90px}
+.match-xg .xg-vals{font-size:15px;font-weight:600;letter-spacing:1px}
+.match-xg .xg-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+.match-xg .xg-result{font-size:10px;margin-top:2px;color:var(--muted)}
+.match-md{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:10px 0 4px;font-weight:500}
+.match-row.played{background:var(--qualify-bg);border-radius:4px;margin:2px -4px;padding:8px 4px}
+.match-row.played .xg-label{color:var(--qualify)}
+.match-actual{font-size:16px;font-weight:700;letter-spacing:2px}
+.played-badge{display:inline-block;font-size:9px;background:var(--qualify);color:#fff;padding:1px 5px;border-radius:3px;text-transform:uppercase;letter-spacing:1px;margin-left:4px;vertical-align:middle}
+.match-accuracy{font-size:10px;margin-top:4px;color:var(--muted);line-height:1.4}
+.match-accuracy .acc-xg{color:var(--text);font-weight:500}
+.match-accuracy .acc-outcome{font-weight:500}
+.acc-correct{color:var(--qualify)}.acc-wrong{color:var(--high)}.acc-partial{color:var(--maybe)}
+
+/* Score inputs */
+.score-input-wrap{display:flex;align-items:center;gap:6px;justify-content:center}
+.score-input{width:36px;height:30px;text-align:center;border:1px solid var(--border);border-radius:4px;font-size:14px;font-weight:600;font-family:inherit;background:var(--card);color:var(--text);padding:0}
+.score-input:focus{outline:2px solid var(--accent);border-color:var(--accent)}
+.score-dash{font-size:14px;color:var(--muted);font-weight:600}
+.xg-original{font-size:9px;color:var(--muted);margin-top:2px;font-style:italic}
+.score-save{display:inline-block;margin-top:4px;font-size:9px;background:var(--accent);color:#fff;border:none;padding:2px 8px;border-radius:3px;cursor:pointer;text-transform:uppercase;letter-spacing:1px;font-family:inherit}
+.score-save:hover{opacity:0.85}
+.score-clear{display:inline-block;margin-top:4px;margin-left:4px;font-size:9px;background:var(--muted);color:#fff;border:none;padding:2px 8px;border-radius:3px;cursor:pointer;text-transform:uppercase;letter-spacing:1px;font-family:inherit}
+.score-clear:hover{opacity:0.85}
+
+/* Recalculate bar */
+.recalc-bar{position:sticky;top:0;z-index:100;background:var(--accent);color:#fff;text-align:center;padding:10px 24px;font-size:13px;font-weight:500;display:none;cursor:pointer;transition:opacity .15s}
+.recalc-bar:hover{opacity:0.9}
+.recalc-bar.visible{display:block}
+
+/* Third-placed table */
+.thirds-section{max-width:900px;margin:0 auto 32px;padding:0 24px}
+.thirds-title{font-family:Georgia,serif;font-size:20px;font-weight:400;margin-bottom:4px;text-align:center}
+.thirds-sub{font-size:12px;color:var(--muted);text-align:center;margin-bottom:16px}
+.thirds-card{background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.thirds-table{width:100%;border-collapse:collapse;font-size:13px}
+.thirds-table th{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:500;padding:8px 10px 6px;text-align:left;border-bottom:1px solid var(--border)}
+.thirds-table th.r{text-align:right}
+.thirds-table td{padding:9px 10px;border-bottom:1px solid #f0eeea;vertical-align:middle;font-feature-settings:'tnum';font-variant-numeric:tabular-nums}
+.thirds-table tr:last-child td{border-bottom:none}
+.thirds-table tr.qualifies{background:var(--qualify-bg)}
+.thirds-table tr.eliminated{background:var(--out-bg)}
+.thirds-table td.r{text-align:right}
+.thirds-table .team-cell{display:flex;align-items:center;gap:7px}
+.thirds-table .flag{font-size:16px;line-height:1}
+.thirds-table .team-name{font-weight:500;font-size:13px}
+.thirds-table .qual-pct{font-weight:600;font-size:13px}
+
+/* Methodology */
+.methodology{max-width:780px;margin:0 auto 80px;padding:0 24px}
+.method-heading{font-family:Georgia,serif;font-size:22px;font-weight:400;margin-bottom:20px;text-align:center}
+.method-card{background:var(--card);border:1px solid var(--border);border-radius:6px;margin-bottom:12px;overflow:hidden}
+.method-card-header{padding:14px 18px;cursor:pointer;display:flex;align-items:center;gap:10px;font-weight:500;font-size:14px;user-select:none}
+.method-card-header:hover{background:#faf9f7}
+.method-icon{font-size:18px}
+.method-card-header::after{content:'▾';margin-left:auto;color:var(--muted);font-size:12px}
+.method-card-header.open::after{content:'▴'}
+.method-body{display:none;padding:0 18px 16px;font-size:13px;color:#444;line-height:1.7}
+.method-body.open{display:block}
+.method-body p{margin-bottom:10px}
+.method-body code{background:#f0eeea;padding:2px 6px;border-radius:3px;font-size:12px}
+.method-body ul{margin:8px 0 12px 20px}
+.method-body li{margin-bottom:4px}
+.method-note{max-width:680px;margin:20px auto 0;text-align:center;font-size:12px;color:var(--muted);line-height:1.7}
+
+/* Heatmap */
+.heatmap-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -4px}
+.heatmap{width:100%;border-collapse:collapse;font-size:12px;min-width:520px}
+.heatmap thead th{position:sticky;top:0;background:var(--bg);font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:500;padding:6px 4px;border-bottom:2px solid var(--border);white-space:nowrap}
+.hm-rank{width:28px;text-align:center;color:var(--muted);font-size:11px;padding:5px 4px}
+.hm-team{padding:5px 8px;white-space:nowrap}
+.hm-flag{font-size:15px;margin-right:5px;vertical-align:middle}
+.hm-name{font-weight:500;font-size:12px;vertical-align:middle}
+.hm-round{text-align:center;width:60px}
+.hm-cell{text-align:center;padding:5px 4px;font-size:11px;font-weight:500;font-feature-settings:'tnum';font-variant-numeric:tabular-nums;border-left:1px solid rgba(255,255,255,0.3)}
+.heatmap tbody tr{border-bottom:1px solid #eae8e3}
+.heatmap tbody tr:hover{outline:2px solid var(--accent);outline-offset:-1px;z-index:1;position:relative}
+
+/* Loading */
+.loading{text-align:center;padding:40px;font-size:14px;color:var(--muted)}
+.loading-dot{display:inline-block;animation:blink 1.2s infinite}
+@keyframes blink{0%,100%{opacity:.2}50%{opacity:1}}
+
+@media(max-width:480px){
+  .hero{padding:32px 16px 20px}
+  .groups-grid{padding:0 12px 32px;gap:14px}
+  .standings .team-name{max-width:90px}
+  .prob-item{grid-template-columns:24px 100px 1fr 44px}
+  .final-matchup{font-size:16px;gap:10px}
+  .predictions{padding:0 12px}
+  .methodology{padding:0 12px}
+}
+</style>
+</head>
+<body>
+
+<div class="recalc-bar" id="recalcBar" onclick="runAndRender()">Results changed — click to re-run 100,000 simulations</div>
+
+<div class="hero">
+  <div class="hero-eyebrow">FIFA World Cup 2026</div>
+  <h1>Tournament <em>Predictor</em></h1>
+  <p class="hero-sub">Live tournament tracker — actual results locked in, remaining matches simulated via 100,000 Monte Carlo runs</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="hero-stat-val" id="playedCount">8</div><div class="hero-stat-label">Played</div></div>
+    <div class="hero-stat"><div class="hero-stat-val" id="remainingCount">64</div><div class="hero-stat-label">Remaining</div></div>
+    <div class="hero-stat"><div class="hero-stat-val">100K</div><div class="hero-stat-label">Simulations</div></div>
+  </div>
+</div>
+
+<div class="predictions" id="predictions">
+  <div class="loading">Computing tournament predictions<span class="loading-dot">.</span><span class="loading-dot">.</span><span class="loading-dot">.</span></div>
+</div>
+
+<div class="section-divider"><hr></div>
+
+<div style="text-align:center;padding:0 24px 8px">
+  <div style="font-family:Georgia,serif;font-size:20px;margin-bottom:4px">Group Stage Standings</div>
+  <p style="font-size:12px;color:var(--muted)">Averages from 100,000 Monte Carlo simulations (actual results locked in)</p>
+</div>
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot q"></div> Qualifies (1st/2nd)</div>
+  <div class="legend-item"><div class="legend-dot m"></div> Potential qualifier (3rd)</div>
+  <div class="legend-item"><div class="legend-dot o"></div> Eliminated (4th)</div>
+</div>
+<div class="groups-grid" id="groupsGrid"><div class="loading">Simulating group stages<span class="loading-dot">.</span><span class="loading-dot">.</span><span class="loading-dot">.</span></div></div>
+
+<div class="thirds-section" id="thirdsSection"></div>
+
+<div class="methodology" id="methodology"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════════════
+const FLAGS={'Argentina':'🇦🇷','Algeria':'🇩🇿','Austria':'🇦🇹','Jordan':'🇯🇴','Mexico':'🇲🇽','South Africa':'🇿🇦','South Korea':'🇰🇷','Czechia':'🇨🇿','Canada':'🇨🇦','Bosnia & Herzegovina':'🇧🇦','Qatar':'🇶🇦','Switzerland':'🇨🇭','Brazil':'🇧🇷','Morocco':'🇲🇦','Haiti':'🇭🇹','Scotland':'🏴󠁧󠁢󠁳󠁣󠁴󠁿','United States':'🇺🇸','Paraguay':'🇵🇾','Türkiye':'🇹🇷','Australia':'🇦🇺','Germany':'🇩🇪','Curaçao':'🇨🇼','Ivory Coast':'🇨🇮','Ecuador':'🇪🇨','Netherlands':'🇳🇱','Japan':'🇯🇵','Sweden':'🇸🇪','Tunisia':'🇹🇳','Belgium':'🇧🇪','Egypt':'🇪🇬','Iran':'🇮🇷','New Zealand':'🇳🇿','Spain':'🇪🇸','Cape Verde':'🇨🇻','Saudi Arabia':'🇸🇦','Uruguay':'🇺🇾','France':'🇫🇷','Senegal':'🇸🇳','Iraq':'🇮🇶','Norway':'🇳🇴','Portugal':'🇵🇹','DR Congo':'🇨🇩','Uzbekistan':'🇺🇿','Colombia':'🇨🇴','England':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','Croatia':'🇭🇷','Ghana':'🇬🇭','Panama':'🇵🇦'};
+
+const MATCHES=[
+['A',1,'Mexico','South Africa',1.82,0.65,[2,0]],['A',1,'South Korea','Czechia',1.15,1.08,[2,1]],
+['A',2,'Czechia','South Africa',1.55,0.72,null],['A',2,'Mexico','South Korea',1.42,1.18,null],
+['A',3,'Czechia','Mexico',1.05,1.52,null],['A',3,'South Africa','South Korea',0.72,1.48,null],
+['B',1,'Canada','Bosnia & Herzegovina',1.58,0.92,[1,1]],['B',1,'Qatar','Switzerland',0.58,1.90,[1,1]],
+['B',2,'Switzerland','Bosnia & Herzegovina',1.45,0.88,null],['B',2,'Canada','Qatar',2.10,0.48,null],
+['B',3,'Switzerland','Canada',1.28,1.25,null],['B',3,'Bosnia & Herzegovina','Qatar',1.55,0.62,null],
+['C',1,'Brazil','Morocco',1.95,1.12,[1,1]],['C',1,'Haiti','Scotland',0.52,1.65,[0,1]],
+['C',2,'Scotland','Morocco',0.78,1.55,null],['C',2,'Brazil','Haiti',3.15,0.28,null],
+['C',3,'Scotland','Brazil',0.58,2.25,null],['C',3,'Morocco','Haiti',2.18,0.35,null],
+['D',1,'United States','Paraguay',1.72,0.78,[4,1]],['D',1,'Australia','Türkiye',0.95,1.28,[2,0]],
+['D',2,'United States','Australia',1.65,0.82,null],['D',2,'Türkiye','Paraguay',1.35,0.78,null],
+['D',3,'Türkiye','United States',1.15,1.42,null],['D',3,'Paraguay','Australia',1.12,0.95,null],
+['E',1,'Germany','Curaçao',3.20,0.35,[7,1]],['E',1,'Ivory Coast','Ecuador',1.10,1.15,[1,0]],
+['E',2,'Germany','Ivory Coast',2.15,0.78,null],['E',2,'Ecuador','Curaçao',2.35,0.42,null],
+['E',3,'Ecuador','Germany',0.92,1.78,null],['E',3,'Curaçao','Ivory Coast',0.38,2.08,null],
+['F',1,'Netherlands','Japan',1.68,1.25,[2,2]],['F',1,'Sweden','Tunisia',1.45,0.82,[5,1]],
+['F',2,'Netherlands','Sweden',1.72,1.05,null],['F',2,'Tunisia','Japan',0.72,1.62,null],
+['F',3,'Japan','Sweden',1.35,1.18,null],['F',3,'Tunisia','Netherlands',0.58,1.92,null],
+['G',1,'Belgium','Egypt',1.52,0.95,[1,1]],['G',1,'Iran','New Zealand',1.38,0.68,null],
+['G',2,'Belgium','Iran',1.72,0.68,null],['G',2,'New Zealand','Egypt',0.62,1.42,null],
+['G',3,'Egypt','Iran',1.18,0.85,null],['G',3,'New Zealand','Belgium',0.45,2.15,null],
+['H',1,'Spain','Cape Verde',2.85,0.38,[0,0]],['H',1,'Saudi Arabia','Uruguay',0.62,1.85,null],
+['H',2,'Spain','Saudi Arabia',2.55,0.45,null],['H',2,'Uruguay','Cape Verde',2.28,0.38,null],
+['H',3,'Cape Verde','Saudi Arabia',0.85,0.92,null],['H',3,'Uruguay','Spain',1.08,1.72,null],
+['I',1,'France','Senegal',2.10,0.82,null],['I',1,'Iraq','Norway',0.72,2.05,null],
+['I',2,'France','Iraq',2.48,0.42,null],['I',2,'Norway','Senegal',1.85,0.92,null],
+['I',3,'Norway','France',1.42,1.55,null],['I',3,'Senegal','Iraq',1.62,0.55,null],
+['J',1,'Argentina','Algeria',2.25,0.68,null],['J',1,'Austria','Jordan',1.72,0.58,null],
+['J',2,'Argentina','Austria',1.95,0.85,null],['J',2,'Jordan','Algeria',0.72,1.08,null],
+['J',3,'Algeria','Austria',0.82,1.48,null],['J',3,'Jordan','Argentina',0.38,2.35,null],
+['K',1,'Portugal','DR Congo',2.45,0.55,null],['K',1,'Uzbekistan','Colombia',0.68,1.92,null],
+['K',2,'Portugal','Uzbekistan',2.35,0.52,null],['K',2,'Colombia','DR Congo',2.02,0.58,null],
+['K',3,'Colombia','Portugal',1.28,1.45,null],['K',3,'DR Congo','Uzbekistan',1.15,0.82,null],
+['L',1,'England','Croatia',1.78,1.15,null],['L',1,'Ghana','Panama',1.22,0.85,null],
+['L',2,'England','Ghana',2.18,0.62,null],['L',2,'Panama','Croatia',0.55,1.85,null],
+['L',3,'Panama','England',0.42,2.08,null],['L',3,'Croatia','Ghana',1.72,0.78,null],
+];
+
+// ═══════════════════════════════════════════════════
+//  LOCAL STORAGE — persist user-entered results
+// ═══════════════════════════════════════════════════
+const LS_KEY='wc2026_results';
+function matchKey(m){return m[0]+m[1]+'_'+m[2]+'_v_'+m[3]}
+function loadResults(){
+  try{const d=JSON.parse(localStorage.getItem(LS_KEY));return d||{}}catch(e){return{}}
+}
+function saveResult(key,score){
+  const d=loadResults();
+  if(score===null)delete d[key];else d[key]=score;
+  localStorage.setItem(LS_KEY,JSON.stringify(d));
+}
+function applyStoredResults(){
+  const stored=loadResults();
+  MATCHES.forEach(m=>{
+    const k=matchKey(m);
+    if(stored[k]!==undefined)m[6]=stored[k];
+  });
+}
+applyStoredResults();
+let dirty=false;
+function markDirty(){dirty=true;document.getElementById('recalcBar').classList.add('visible')}
+
+// ═══════════════════════════════════════════════════
+//  OFFICIAL FIFA BRACKET STRUCTURE
+//  R32 matches (M73-M88) with exact FIFA wiring
+//  3rd-placed assignments: full 495-combination lookup
+// ═══════════════════════════════════════════════════
+
+// R32 fixed matchups (non-3rd-place matches)
+// Format: [matchID, type, home_pos, away_pos]
+//   type 'rr' = runner-up vs runner-up
+//   type 'wv' = winner vs runner-up (cross-group)
+// The 8 "w3" matches (winner vs 3rd) are: M74,M77,M79,M80,M81,M82,M85,M87
+// assigned dynamically via the combinations table
+
+// R16 wiring (which R32 winners play each other):
+// M89: W74 vs W77  |  M90: W73 vs W75
+// M91: W76 vs W78  |  M92: W79 vs W80
+// M93: W83 vs W84  |  M94: W81 vs W82
+// M95: W86 vs W88  |  M96: W85 vs W87
+//
+// QF: M97=W89vsW90  M98=W93vsW94  M99=W91vsW92  M100=W95vsW96
+// SF: M101=W97vsW98 (top half)  M102=W99vsW100 (bottom half)
+// Final: W101 vs W102
+
+// 3rd-placed team assignment: full 495-combination lookup from FIFA Annex C
+// Each 8-char block = assignment for positions [1A,1B,1D,1E,1G,1I,1K,1L]
+// Key = sorted letters of the 8-char block (= the qualifying groups)
+const T3_DATA=
+'EJIFHGLK'+'HGIDJFLK'+'EJIDHGLK'+'EJIDHFLK'+'EGIDJFLK'+'EGJDHFLK'+'EGIDHFLK'+'EGJDHFLI'+'EGJDHFIK'+ // 1-9
+'HGICJFLK'+'EJICHGLK'+'EJICHFLK'+'EGICJFLK'+'EGJCHFLK'+'EGICHFLK'+'EGJCHFLI'+'EGJCHFIK'+ // 10-17
+'HGICJDLK'+'CJIDHFLK'+'CGIDJFLK'+'CGJDHFLK'+'CGIDHFLK'+'CGJDHFLI'+'CGJDHFIK'+ // 18-24
+'EJICHDLK'+'EGICJDLK'+'EGJCHDLK'+'EGICHDLK'+'EGJCHDLI'+'EGJCHDIK'+ // 25-30
+'CJEDIFKL'+'CJEDHFLK'+'CEIDHFLK'+'CJEDHFLI'+'CJEDHFIK'+ // 31-35 (note: I wrote the assignments reading from the table)
+'CGEDJFLK'+'CGEDIFLK'+'CGEDJFLI'+'CGEDJFIK'+'CGEDHFLK'+ // 36-40
+'CGJDHFLE'+'CGJDHFEK'+'CGEDHFLI'+'CGEDHFIK'+'CGJDHFEI'+ // 41-45
+'HJBFIGLK'+'EJIBHGLK'+'EJBFIHLK'+'EJBFIGLK'+'EJBFHGLK'+'EGBFIHLK'+'EJBFHGLI'+'EJBFHGIK'+ // 46-53
+'HJBDIGLK'+'HJBDIFLK'+'IGBDJFLK'+'HGBDJFLK'+'HGBDIFLK'+'HGBDJFLI'+'HGBDJFIK'+ // 54-60
+'EJBDIHLK'+'EJBDIGLK'+'EJBDHGLK'+'EGBDIHLK'+'EJBDHGLI'+'EJBDHGIK'+ // 61-66
+'EJBDIFLK'+'EJBDHFLK'+'EIBDHFLK'+'EJBDHFLI'+'EJBDHFIK'+ // 67-71
+'EGBDJFLK'+'EGBDIFLK'+'EGBDJFLI'+'EGBDJFIK'+'EGBDHFLK'+ // 72-76
+'HGBDJFLE'+'HGBDJFEK'+'EGBDHFLI'+'EGBDHFIK'+'HGBDJFEI'+ // 77-81
+'HJBCIGLK'+'HJBCIFLK'+'IGBCJFLK'+'HGBCJFLK'+'HGBCIFLK'+'HGBCJFLI'+'HGBCJFIK'+ // 82-88
+'EJBCIHLK'+'EJBCIGLK'+'EJBCHGLK'+'EGBCIHLK'+'EJBCHGLI'+'EJBCHGIK'+ // 89-94
+'EJBCIFLK'+'EJBCHFLK'+'EIBCHFLK'+'EJBCHFLI'+'EJBCHFIK'+ // 95-99
+'EGBCJFLK'+'EGBCIFLK'+'EGBCJFLI'+'EGBCJFIK'+'EGBCHFLK'+ // 100-104
+'HGBCJFLE'+'HGBCJFEK'+'EGBCHFLI'+'EGBCHFIK'+'HGBCJFEI'+ // 105-109
+'HJBCIDLK'+'IGBCJDLK'+'HGBCJDLK'+'HGBCIDLK'+'HGBCJDLI'+'HGBCJDIK'+ // 110-115
+'CJBDIFLK'+'CJBDHFLK'+'CIBDHFLK'+'CJBDHFLI'+'CJBDHFIK'+ // 116-120
+'CGBDJFLK'+'CGBDIFLK'+'CGBDJFLI'+'CGBDJFIK'+'CGBDHFLK'+ // 121-125
+'CGBDHFLJ'+'HGBCJFDK'+'CGBDHFLI'+'CGBDHFIK'+'HGBCJFDI'+ // 126-130
+'EJBCIDLK'+'EJBCHDLK'+'EIBCHDLK'+'EJBCHDLI'+'EJBCHDIK'+ // 131-135
+'EGBCJDLK'+'EGBCIDLK'+'EGBCJDLI'+'EGBCJDIK'+'EGBCHDLK'+ // 136-140
+'HGBCJDLE'+'HGBCJDEK'+'EGBCHDLI'+'EGBCHDIK'+'HGBCJDEI'+ // 141-145
+'CJBDEFLK'+'CEBDIFLK'+'CJBDEFLI'+'CJBDEFIK'+'CEBDHFLK'+ // 146-150
+'CJBDHFLE'+'CJBDHFEK'+'CEBDHFLI'+'CEBDHFIK'+'CJBDHFEI'+ // 151-155
+'CGBDEFLK'+'CGBDJFLE'+'CGBDJFEK'+'CGBDEFLI'+'CGBDEFIK'+ // 156-160
+'CGBDJFEI'+'CGBDHFLE'+'CGBDHFEK'+'HGBCJFDE'+'CGBDHFEI'+ // 161-165
+'HJIFAGLK'+'EJIAHGLK'+'EJIFAHLK'+'EJIFAGLK'+'EGJFAHLK'+'EGIFAHLK'+'EGJFAHLI'+'EGJFAHIK'+ // 166-173
+'HJIDAGLK'+'HJIDAFLK'+'IGJDAFLK'+'HGJDAFLK'+'HGIDAFLK'+'HGJDAFLI'+'HGJDAFIK'+ // 174-180
+'EJIDAHLK'+'EJIDAGLK'+'EGJDAHLK'+'EGIDAHLK'+'EGJDAHLI'+'EGJDAHIK'+ // 181-186
+'EJIDAFLK'+'HJEDAFLK'+'HEIDAFLK'+'HJEDAFLI'+'HJEDAFIK'+ // 187-191
+'EGJDAFLK'+'EGIDAFLK'+'EGJDAFLI'+'EGJDAFIK'+'HGEDAFLK'+ // 192-196
+'HGJDAFLE'+'HGJDAFEK'+'HGEDAFLI'+'HGEDAFIK'+'HGJDAFEI'+ // 197-201
+'HJICAGLK'+'HJICAFLK'+'IGJCAFLK'+'HGJCAFLK'+'HGICAFLK'+'HGJCAFLI'+'HGJCAFIK'+ // 202-208
+'EJICAHLK'+'EJICAGLK'+'EGJCAHLK'+'EGICAHLK'+'EGJCAHLI'+'EGJCAHIK'+ // 209-214
+'EJICAFLK'+'HJECAFLK'+'HEICAFLK'+'HJECAFLI'+'HJECAFIK'+ // 215-219
+'EGJCAFLK'+'EGICAFLK'+'EGJCAFLI'+'EGJCAFIK'+'HGECAFLK'+ // 220-224
+'HGJCAFLE'+'HGJCAFEK'+'HGECAFLI'+'HGECAFIK'+'HGJCAFEI'+ // 225-229
+'HJICADLK'+'IGJCADLK'+'HGJCADLK'+'HGICADLK'+'HGJCADLI'+'HGJCADIK'+ // 230-235
+'CJIDAFLK'+'HJFCADLK'+'HFICADLK'+'HJFCADLI'+'HJFCADIK'+ // 236-240
+'CGJDAFLK'+'CGIDAFLK'+'CGJDAFLI'+'CGJDAFIK'+'HGFCADLK'+ // 241-245
+'CGJDAFLH'+'HGJCAFDK'+'HGFCADLI'+'HGFCADIK'+'HGJCAFDI'+ // 246-250
+'EJICADLK'+'HJECADLK'+'HEICADLK'+'HJECADLI'+'HJECADIK'+ // 251-255
+'EGJCADLK'+'EGICADLK'+'EGJCADLI'+'EGJCADIK'+'HGECADLK'+ // 256-260
+'HGJCADLE'+'HGJCADEK'+'HGECADLI'+'HGECADIK'+'HGJCADEI'+ // 261-265
+'CJEDAFLK'+'CEIDAFLK'+'CJEDAFLI'+'CJEDAFIK'+'HEFCADLK'+ // 266-270
+'HJFCADLE'+'HJECAFDK'+'HEFCADLI'+'HEFCADIK'+'HJECAFDI'+ // 271-275
+'CGEDAFLK'+'CGJDAFLE'+'CGJDAFEK'+'CGEDAFLI'+'CGEDAFIK'+ // 276-280
+'CGJDAFEI'+'HGFCADLE'+'HGECAFDK'+'HGJCAFDE'+'HGECAFDI'+ // 281-285
+'HJBAIGLK'+'HJBAIFLK'+'IJBFAGLK'+'HJBFAGLK'+'HGBAIFLK'+'HJBFAGLI'+'HJBFAGIK'+ // 286-292
+'EJBAIHLK'+'EJBAIGLK'+'EJBAHGLK'+'EGBAIHLK'+'EJBAHGLI'+'EJBAHGIK'+ // 293-298
+'EJBAIFLK'+'EJBFAHLK'+'EIBFAHLK'+'EJBFAHLI'+'EJBFAHIK'+ // 299-303
+'EJBFAGLK'+'EGBAIFLK'+'EJBFAGLI'+'EJBFAGIK'+'EGBFAHLK'+ // 304-308
+'HJBFAGLE'+'HJBFAGEK'+'EGBFAHLI'+'EGBFAHIK'+'HJBFAGEI'+ // 309-313
+'IJBDAHLK'+'IJBDAGLK'+'HJBDAGLK'+'IGBDAHLK'+'HJBDAGLI'+'HJBDAGIK'+ // 314-319
+'IJBDAFLK'+'HJBDAFLK'+'HIBDAFLK'+'HJBDAFLI'+'HJBDAFIK'+ // 320-324
+'FJBDAGLK'+'IGBDAFLK'+'FJBDAGLI'+'FJBDAGIK'+'HGBDAFLK'+ // 325-329
+'HGBDAFLJ'+'HGBDAFJK'+'HGBDAFLI'+'HGBDAFIK'+'HGBDAFIJ'+ // 330-334
+'EJBAIDLK'+'EJBDAHLK'+'EIBDAHLK'+'EJBDAHLI'+'EJBDAHIK'+ // 335-339
+'EJBDAGLK'+'EGBAIDLK'+'EJBDAGLI'+'EJBDAGIK'+'EGBDAHLK'+ // 340-344
+'HJBDAGLE'+'HJBDAGEK'+'EGBDAHLI'+'EGBDAHIK'+'HJBDAGEI'+ // 345-349
+'EJBDAFLK'+'EIBDAFLK'+'EJBDAFLI'+'EJBDAFIK'+'HEBDAFLK'+ // 350-354
+'HJBDAFLE'+'HJBDAFEK'+'HEBDAFLI'+'HEBDAFIK'+'HJBDAFEI'+ // 355-359
+'EGBDAFLK'+'EGBDAFLJ'+'EGBDAFJK'+'EGBDAFLI'+'EGBDAFIK'+ // 360-364
+'EGBDAFIJ'+'HGBDAFLE'+'HGBDAFEK'+'HGBDAFEJ'+'HGBDAFEI'+ // 365-369
+'IJBCAHLK'+'IJBCAGLK'+'HJBCAGLK'+'IGBCAHLK'+'HJBCAGLI'+'HJBCAGIK'+ // 370-375
+'IJBCAFLK'+'HJBCAFLK'+'HIBCAFLK'+'HJBCAFLI'+'HJBCAFIK'+ // 376-380
+'CJBFAGLK'+'IGBCAFLK'+'CJBFAGLI'+'CJBFAGIK'+'HGBCAFLK'+ // 381-385
+'HGBCAFLJ'+'HGBCAFJK'+'HGBCAFLI'+'HGBCAFIK'+'HGBCAFIJ'+ // 386-390
+'EJBAICLK'+'EJBCAHLK'+'EIBCAHLK'+'EJBCAHLI'+'EJBCAHIK'+ // 391-395
+'EJBCAGLK'+'EGBAICLK'+'EJBCAGLI'+'EJBCAGIK'+'EGBCAHLK'+ // 396-400
+'HJBCAGLE'+'HJBCAGEK'+'EGBCAHLI'+'EGBCAHIK'+'HJBCAGEI'+ // 401-405
+'EJBCAFLK'+'EIBCAFLK'+'EJBCAFLI'+'EJBCAFIK'+'HEBCAFLK'+ // 406-410
+'HJBCAFLE'+'HJBCAFEK'+'HEBCAFLI'+'HEBCAFIK'+'HJBCAFEI'+ // 411-415
+'EGBCAFLK'+'EGBCAFLJ'+'EGBCAFJK'+'EGBCAFLI'+'EGBCAFIK'+ // 416-420
+'EGBCAFIJ'+'HGBCAFLE'+'HGBCAFEK'+'HGBCAFEJ'+'HGBCAFEI'+ // 421-425
+'IJBCADLK'+'HJBCADLK'+'HIBCADLK'+'HJBCADLI'+'HJBCADIK'+ // 426-430
+'CJBDAGLK'+'IGBCADLK'+'CJBDAGLI'+'CJBDAGIK'+'HGBCADLK'+ // 431-435
+'HGBCADLJ'+'HGBCADJK'+'HGBCADLI'+'HGBCADIK'+'HGBCADIJ'+ // 436-440
+'CJBDAFLK'+'CIBDAFLK'+'CJBDAFLI'+'CJBDAFIK'+'HFBCADLK'+ // 441-445
+'CJBDAFLH'+'HJBCAFDK'+'HFBCADLI'+'HFBCADIK'+'HJBCAFDI'+ // 446-450
+'CGBDAFLK'+'CGBDAFLJ'+'CGBDAFJK'+'CGBDAFLI'+'CGBDAFIK'+ // 451-455
+'CGBDAFIJ'+'CGBDAFLH'+'HGBCAFDK'+'HGBCAFDJ'+'HGBCAFDI'+ // 456-460
+'EJBCADLK'+'EIBCADLK'+'EJBCADLI'+'EJBCADIK'+'HEBCADLK'+ // 461-465
+'HJBCADLE'+'HJBCADEK'+'HEBCADLI'+'HEBCADIK'+'HJBCADEI'+ // 466-470
+'EGBCADLK'+'EGBCADLJ'+'EGBCADJK'+'EGBCADLI'+'EGBCADIK'+ // 471-475
+'EGBCADIJ'+'HGBCADLE'+'HGBCADEK'+'HGBCADEJ'+'HGBCADEI'+ // 476-480
+'CEBDAFLK'+'CJBDAFLE'+'CJBDAFEK'+'CEBDAFLI'+'CEBDAFIK'+ // 481-485
+'CJBDAFEI'+'HFBCADLE'+'HEBCAFDK'+'HJBCAFDE'+'HEBCAFDI'+ // 486-490
+'CGBDAFLE'+'CGBDAFEK'+'CGBDAFEJ'+'CGBDAFEI'+'HGBCAFDE'; // 491-495
+
+// Pre-build lookup: key = sorted qualifying groups → value = assignment string
+const T3={};
+for(let i=0;i<T3_DATA.length;i+=8){
+  const val=T3_DATA.slice(i,i+8);
+  const key=val.split('').sort().join('');
+  T3[key]=val;
+}
+function getThirdAssignments(qualGroups){
+  const key=qualGroups.slice().sort().join('');
+  const val=T3[key];
+  if(!val)return null;
+  const positions=['A','B','D','E','G','I','K','L'];
+  const result={};
+  positions.forEach((p,j)=>{result[p]=val[j]});
+  return result;
+}
+
+// ═══════════════════════════════════════════════════
+//  MATH
+// ═══════════════════════════════════════════════════
+function poissonRandom(lam){
+  if(lam<=0)return 0;
+  const L=Math.exp(-lam);let k=0,p=1;
+  do{k++;p*=Math.random()}while(p>L);
+  return k-1;
+}
+function factorial(n){let r=1;for(let i=2;i<=n;i++)r*=i;return r}
+function poissonPmf(k,lam){if(lam<=0)return k===0?1:0;return Math.exp(-lam)*Math.pow(lam,k)/factorial(k)}
+function matchProbs(xgH,xgA,maxG=7){
+  let pW=0,pD=0,pL=0;
+  for(let i=0;i<=maxG;i++){const pi=poissonPmf(i,xgH);for(let j=0;j<=maxG;j++){const pj=poissonPmf(j,xgA);const p=pi*pj;if(i>j)pW+=p;else if(i===j)pD+=p;else pL+=p}}
+  const t=pW+pD+pL;return{win:pW/t,draw:pD/t,loss:pL/t};
+}
+function mostLikelyScore(xgH,xgA,maxG=6){
+  let bestH=0,bestA=0,bestP=0;
+  for(let i=0;i<=maxG;i++){const pi=poissonPmf(i,xgH);for(let j=0;j<=maxG;j++){const p=pi*poissonPmf(j,xgA);if(p>bestP){bestP=p;bestH=i;bestA=j}}}
+  return{h:bestH,a:bestA,pct:bestP*100};
+}
+
+// ═══════════════════════════════════════════════════
+//  TEAM STRENGTHS (multi-source blend)
+//  40% FIFA ranking, 35% betting odds, 25% group stage xG
+//  Attack = blended xG/match vs average opponent
+//  Defense = blended multiplier on opponent's attack
+// ═══════════════════════════════════════════════════
+
+// Source 1: FIFA World Ranking (June 2026) → mapped to att/def via calibrated curve
+// att = 2.45 * (1/rank)^0.22, def = 0.70 + 0.35 * (rank/85)^0.5
+const FIFA_RANK={
+  'Argentina':1,'Spain':2,'France':3,'England':4,'Portugal':5,'Brazil':6,
+  'Morocco':7,'Netherlands':8,'Belgium':9,'Germany':10,'Croatia':11,
+  'Colombia':13,'Mexico':14,'Senegal':15,'Uruguay':16,'United States':17,
+  'Japan':18,'Switzerland':19,'Iran':20,'Türkiye':22,'Ecuador':23,
+  'Austria':24,'South Korea':25,'Australia':27,'Algeria':28,'Egypt':29,
+  'Canada':30,'Norway':31,'Ivory Coast':33,'Panama':34,'Sweden':38,
+  'Paraguay':39,'Czechia':40,'Scotland':42,'Tunisia':45,'DR Congo':46,
+  'Uzbekistan':50,'Qatar':56,'Iraq':57,'South Africa':60,'Saudi Arabia':61,
+  'Jordan':63,'Bosnia & Herzegovina':64,'Cape Verde':67,'Ghana':73,
+  'Curaçao':82,'Haiti':83,'New Zealand':85,
+};
+function fifaToAtt(rank){return 2.45*Math.pow(1/rank,0.22)}
+function fifaToDef(rank){return 0.70+0.35*Math.pow(rank/85,0.5)}
+
+// Source 2: Betting odds (outright winner implied probability → att/def)
+// Top teams from FanDuel/Polymarket; rest estimated from ranking
+const ODDS_PCT={
+  'Spain':19,'France':16,'Argentina':15,'England':13,'Brazil':10,
+  'Germany':7,'Netherlands':4.5,'Portugal':4,'Colombia':2.5,'Croatia':1.5,
+  'Uruguay':1.2,'Belgium':1,'Japan':0.8,'United States':0.8,'Mexico':0.5,
+};
+function oddsToAtt(team){
+  const pct=ODDS_PCT[team];
+  if(pct)return 1.20+0.065*Math.sqrt(pct*100); // maps 19%→4.03, 10%→3.25, 1%→1.85 (high raw values, moderated by 35% blend weight)
+  const rank=FIFA_RANK[team]||50;
+  return fifaToAtt(rank)*0.95; // slight discount for unlisted teams
+}
+function oddsToDef(team){
+  const pct=ODDS_PCT[team];
+  if(pct)return 0.65+0.30/(1+pct/5); // maps 19%→0.71, 10%→0.75, 1%→0.90
+  const rank=FIFA_RANK[team]||50;
+  return fifaToDef(rank)*1.02;
+}
+
+// Source 3: Group stage xG (iterative proportional fitting, within-group only)
+function computeGroupXGRatings(){
+  const td={};
+  MATCHES.forEach(([g,md,h,a,xgH,xgA])=>{
+    if(!td[h])td[h]=[];if(!td[a])td[a]=[];
+    td[h].push({opp:a,xgf:xgH,xga:xgA});
+    td[a].push({opp:h,xgf:xgA,xga:xgH});
+  });
+  const teams=Object.keys(td);
+  const att={},def={};
+  teams.forEach(t=>{att[t]=1.3;def[t]=1.0});
+  for(let i=0;i<30;i++){
+    teams.forEach(t=>{att[t]=td[t].reduce((s,m)=>s+m.xgf/def[m.opp],0)/td[t].length});
+    teams.forEach(t=>{def[t]=td[t].reduce((s,m)=>s+m.xga/att[m.opp],0)/td[t].length});
+    const avgDef=teams.reduce((s,t)=>s+def[t],0)/teams.length;
+    teams.forEach(t=>{def[t]/=avgDef;att[t]*=avgDef});
+  }
+  return{att,def};
+}
+
+// Blend all three sources
+function computeTeamRatings(){
+  const xgR=computeGroupXGRatings();
+  const teams=Object.keys(FIFA_RANK);
+  const att={},def={};
+  teams.forEach(t=>{
+    const fAtt=fifaToAtt(FIFA_RANK[t]);
+    const oAtt=oddsToAtt(t);
+    const gAtt=xgR.att[t]||1.0;
+    att[t]=fAtt*0.40+oAtt*0.35+gAtt*0.25;
+
+    const fDef=fifaToDef(FIFA_RANK[t]);
+    const oDef=oddsToDef(t);
+    const gDef=xgR.def[t]||1.0;
+    def[t]=fDef*0.40+oDef*0.35+gDef*0.25;
+  });
+  return{att,def};
+}
+const RATINGS=computeTeamRatings();
+
+// ═══════════════════════════════════════════════════
+//  BAYESIAN ADJUSTMENT FROM ACTUAL RESULTS
+//  Computes per-team attack/defense multipliers based
+//  on how actual goals compare to predicted xG.
+//  Shrinkage toward 1.0 prevents overreacting to small samples.
+// ═══════════════════════════════════════════════════
+let ADJ={};
+function computeTournamentAdjustments(){
+  const teamData={};
+  MATCHES.forEach(([g,md,h,a,xgH,xgA,actual])=>{
+    if(!actual)return;
+    if(!teamData[h])teamData[h]={gf:0,ga:0,xgf:0,xga:0,n:0};
+    if(!teamData[a])teamData[a]={gf:0,ga:0,xgf:0,xga:0,n:0};
+    const oppDefH=RATINGS.def[a]||1.0,oppDefA=RATINGS.def[h]||1.0;
+    const oppAttH=RATINGS.att[a]||1.0,oppAttA=RATINGS.att[h]||1.0;
+    teamData[h].gf+=actual[0]/oppDefH;teamData[h].ga+=actual[1]/oppAttA;
+    teamData[h].xgf+=xgH/oppDefH;teamData[h].xga+=xgA/oppAttA;teamData[h].n++;
+    teamData[a].gf+=actual[1]/oppDefA;teamData[a].ga+=actual[0]/oppAttH;
+    teamData[a].xgf+=xgA/oppDefA;teamData[a].xga+=xgH/oppAttH;teamData[a].n++;
+  });
+  const adj={};
+  Object.keys(FLAGS).forEach(t=>{
+    const d=teamData[t];
+    if(!d||d.n===0){adj[t]={att:1,def:1};return}
+    const shrinkage=Math.min(0.2*d.n,0.6);
+    const attRatio=d.xgf>0?d.gf/d.xgf:1;
+    const defRatio=d.xga>0?d.ga/d.xga:1;
+    adj[t]={
+      att:1+shrinkage*(attRatio-1),
+      def:1+shrinkage*(defRatio-1)
+    };
+  });
+  ADJ=adj;
+}
+computeTournamentAdjustments();
+
+function knockoutXG(teamA,teamB,stageMult=0.95){
+  const adjA=ADJ[teamA]||{att:1,def:1};
+  const adjB=ADJ[teamB]||{att:1,def:1};
+  const xgA=(RATINGS.att[teamA]||1.0)*adjA.att*(RATINGS.def[teamB]||1.0)*adjB.def*stageMult;
+  const xgB=(RATINGS.att[teamB]||1.0)*adjB.att*(RATINGS.def[teamA]||1.0)*adjA.def*stageMult;
+  return[Math.max(0.25,xgA),Math.max(0.25,xgB)];
+}
+
+// ═══════════════════════════════════════════════════
+//  SIMULATION
+// ═══════════════════════════════════════════════════
+function simGroupStage(){
+  const groups={};
+  const matchResults=[];
+  MATCHES.forEach(([g,md,h,a])=>{
+    if(!groups[g])groups[g]={};
+    if(!groups[g][h])groups[g][h]={pts:0,gf:0,ga:0,group:g};
+    if(!groups[g][a])groups[g][a]={pts:0,gf:0,ga:0,group:g};
+  });
+  MATCHES.forEach(([g,md,h,a,xgH,xgA,actual])=>{
+    let gH,gA;
+    if(actual){gH=actual[0];gA=actual[1]}
+    else{
+      const adjH=ADJ[h]||{att:1,def:1},adjA=ADJ[a]||{att:1,def:1};
+      gH=poissonRandom(xgH*adjH.att*adjA.def);
+      gA=poissonRandom(xgA*adjA.att*adjH.def);
+    }
+    if(gH>gA){groups[g][h].pts+=3}
+    else if(gH===gA){groups[g][h].pts+=1;groups[g][a].pts+=1}
+    else{groups[g][a].pts+=3}
+    groups[g][h].gf+=gH;groups[g][h].ga+=gA;
+    groups[g][a].gf+=gA;groups[g][a].ga+=gH;
+    matchResults.push({g,h,a,gH,gA});
+  });
+
+  // FIFA group tiebreaker with proper mini-table for multi-team ties
+  function rankGroup(teams,g){
+    // Step 1: sort by points
+    teams.sort((a,b)=>b.pts-a.pts);
+    // Step 2: resolve ties using H2H mini-table
+    let i=0;
+    while(i<teams.length){
+      let j=i+1;
+      while(j<teams.length&&teams[j].pts===teams[i].pts)j++;
+      if(j-i>1) resolveTie(teams,i,j,g);
+      i=j;
+    }
+    return teams;
+  }
+
+  function resolveTie(teams,start,end,g){
+    const tied=teams.slice(start,end);
+    const names=new Set(tied.map(t=>t.name));
+    // Build H2H mini-table among tied teams
+    tied.forEach(t=>{t.h2hPts=0;t.h2hGf=0;t.h2hGa=0});
+    matchResults.forEach(m=>{
+      if(m.g!==g||!names.has(m.h)||!names.has(m.a))return;
+      const home=tied.find(t=>t.name===m.h);
+      const away=tied.find(t=>t.name===m.a);
+      if(m.gH>m.gA){home.h2hPts+=3}
+      else if(m.gH===m.gA){home.h2hPts+=1;away.h2hPts+=1}
+      else{away.h2hPts+=3}
+      home.h2hGf+=m.gH;home.h2hGa+=m.gA;
+      away.h2hGf+=m.gA;away.h2hGa+=m.gH;
+    });
+    // Sort by H2H: pts → GD → GF, then overall GD → GF
+    tied.sort((a,b)=>{
+      if(b.h2hPts!==a.h2hPts)return b.h2hPts-a.h2hPts;
+      const hdA=a.h2hGf-a.h2hGa,hdB=b.h2hGf-b.h2hGa;
+      if(hdB!==hdA)return hdB-hdA;
+      if(b.h2hGf!==a.h2hGf)return b.h2hGf-a.h2hGf;
+      if(b.gd!==a.gd)return b.gd-a.gd;
+      return b.gf-a.gf;
+    });
+    for(let k=0;k<tied.length;k++)teams[start+k]=tied[k];
+  }
+
+  const result={};
+  Object.keys(groups).forEach(g=>{
+    const teams=Object.entries(groups[g]).map(([name,d])=>({name,...d,gd:d.gf-d.ga}));
+    rankGroup(teams,g);
+    result[g]=teams;
+  });
+  return result;
+}
+
+function getAdvancing(gs){
+  const pos={};// pos[group]={first:team,second:team,third:team}
+  const thirds=[];
+  Object.keys(gs).sort().forEach(g=>{
+    pos[g]={first:gs[g][0].name,second:gs[g][1].name};
+    thirds.push({name:gs[g][2].name,group:g,pts:gs[g][2].pts,gd:gs[g][2].gd,gf:gs[g][2].gf});
+  });
+  thirds.sort((a,b)=>(b.pts-a.pts)||(b.gd-a.gd)||(b.gf-a.gf));
+  const qual3=thirds.slice(0,8);
+  return{pos,qual3};
+}
+
+function simKnockoutMatch(tA,tB,stageMult){
+  const[xgA,xgB]=knockoutXG(tA,tB,stageMult);
+  let gA=poissonRandom(xgA),gB=poissonRandom(xgB);
+  if(gA!==gB)return gA>gB?tA:tB;
+  // Extra time
+  const etA=poissonRandom(xgA*0.35),etB=poissonRandom(xgB*0.35);
+  gA+=etA;gB+=etB;
+  if(gA!==gB)return gA>gB?tA:tB;
+  // Penalties — pure coin flip (historically ~50/50)
+  return Math.random()<0.5?tA:tB;
+}
+
+function simTournament(){
+  const gs=simGroupStage();
+  const adv=getAdvancing(gs);
+  const{pos,qual3}=adv;
+
+  // Collect R32 qualifiers
+  const r32set=new Set();
+  Object.values(pos).forEach(p=>{r32set.add(p.first);r32set.add(p.second)});
+  qual3.forEach(t=>r32set.add(t.name));
+
+  // Get 3rd-placed assignments from FIFA combinations table
+  const qualGroups=qual3.map(t=>t.group).sort();
+  const thirdMap=getThirdAssignments(qualGroups);
+  if(!thirdMap)console.warn('T3 lookup miss for qualifying groups:',qualGroups.join(''));
+  // Build lookup: group letter → team name for qualifying 3rds
+  const thirdTeams={};
+  qual3.forEach(t=>{thirdTeams[t.group]=t.name});
+  // Safe lookup: returns the assigned 3rd-place team, or weakest available 3rd as fallback
+  const usedThirds=new Set();
+  function getThird(winnerPos){
+    const assignedGroup=thirdMap&&thirdMap[winnerPos];
+    if(assignedGroup&&thirdTeams[assignedGroup]&&!usedThirds.has(assignedGroup)){
+      usedThirds.add(assignedGroup);
+      return thirdTeams[assignedGroup];
+    }
+    // Fallback: pick first unused qualifying 3rd (sorted by weakest first)
+    for(let i=qual3.length-1;i>=0;i--){
+      if(!usedThirds.has(qual3[i].group)){
+        usedThirds.add(qual3[i].group);
+        return qual3[i].name;
+      }
+    }
+    return qual3[0].name; // absolute last resort
+  }
+
+  // Build all 16 R32 matches per FIFA schedule
+  // M73: 2A vs 2B
+  const w73=simKnockoutMatch(pos.A.second,pos.B.second,0.95);
+  // M74: 1E vs 3rd(ABCDF)
+  const w74=simKnockoutMatch(pos.E.first,getThird('E'),0.95);
+  // M75: 1F vs 2C
+  const w75=simKnockoutMatch(pos.F.first,pos.C.second,0.95);
+  // M76: 1C vs 2F
+  const w76=simKnockoutMatch(pos.C.first,pos.F.second,0.95);
+  // M77: 1I vs 3rd(CDFGH)
+  const w77=simKnockoutMatch(pos.I.first,getThird('I'),0.95);
+  // M78: 2E vs 2I
+  const w78=simKnockoutMatch(pos.E.second,pos.I.second,0.95);
+  // M79: 1A vs 3rd(CEFHI)
+  const w79=simKnockoutMatch(pos.A.first,getThird('A'),0.95);
+  // M80: 1L vs 3rd(EHIJK)
+  const w80=simKnockoutMatch(pos.L.first,getThird('L'),0.95);
+  // M81: 1D vs 3rd(BEFIJ)
+  const w81=simKnockoutMatch(pos.D.first,getThird('D'),0.95);
+  // M82: 1G vs 3rd(AEHIJ)
+  const w82=simKnockoutMatch(pos.G.first,getThird('G'),0.95);
+  // M83: 2K vs 2L
+  const w83=simKnockoutMatch(pos.K.second,pos.L.second,0.95);
+  // M84: 1H vs 2J
+  const w84=simKnockoutMatch(pos.H.first,pos.J.second,0.95);
+  // M85: 1B vs 3rd(EFGIJ)
+  const w85=simKnockoutMatch(pos.B.first,getThird('B'),0.95);
+  // M86: 1J vs 2H
+  const w86=simKnockoutMatch(pos.J.first,pos.H.second,0.95);
+  // M87: 1K vs 3rd(DEIJL)
+  const w87=simKnockoutMatch(pos.K.first,getThird('K'),0.95);
+  // M88: 2D vs 2G
+  const w88=simKnockoutMatch(pos.D.second,pos.G.second,0.95);
+
+  const r16set=new Set([w73,w74,w75,w76,w77,w78,w79,w80,w81,w82,w83,w84,w85,w86,w87,w88]);
+
+  // R16 (exact FIFA wiring)
+  const w89=simKnockoutMatch(w74,w77,0.93); // W(1E vs 3rd) vs W(1I vs 3rd)
+  const w90=simKnockoutMatch(w73,w75,0.93); // W(2A vs 2B) vs W(1F vs 2C)
+  const w91=simKnockoutMatch(w76,w78,0.93); // W(1C vs 2F) vs W(2E vs 2I)
+  const w92=simKnockoutMatch(w79,w80,0.93); // W(1A vs 3rd) vs W(1L vs 3rd)
+  const w93=simKnockoutMatch(w83,w84,0.93); // W(2K vs 2L) vs W(1H vs 2J)
+  const w94=simKnockoutMatch(w81,w82,0.93); // W(1D vs 3rd) vs W(1G vs 3rd)
+  const w95=simKnockoutMatch(w86,w88,0.93); // W(1J vs 2H) vs W(2D vs 2G)
+  const w96=simKnockoutMatch(w85,w87,0.93); // W(1B vs 3rd) vs W(1K vs 3rd)
+  const qfset=new Set([w89,w90,w91,w92,w93,w94,w95,w96]);
+
+  // QF
+  const w97=simKnockoutMatch(w89,w90,0.90);  // Top-left quarter
+  const w98=simKnockoutMatch(w93,w94,0.90);  // Top-right quarter
+  const w99=simKnockoutMatch(w91,w92,0.90);  // Bottom-left quarter
+  const w100=simKnockoutMatch(w95,w96,0.90); // Bottom-right quarter
+  const sfset=new Set([w97,w98,w99,w100]);
+
+  // SF
+  const w101=simKnockoutMatch(w97,w98,0.88);  // Top half: Spain/France path
+  const w102=simKnockoutMatch(w99,w100,0.88); // Bottom half: Argentina/England path
+  const fset=new Set([w101,w102]);
+
+  // Final
+  const winner=simKnockoutMatch(w101,w102,0.87);
+
+  return{r32:r32set,r16:r16set,qf:qfset,sf:sfset,final:fset,winner,gs};
+}
+
+function runMC(n){
+  const teams={};
+  Object.keys(FLAGS).forEach(t=>{teams[t]={r32:0,r16:0,qf:0,sf:0,final:0,win:0}});
+  const groupStats={};
+  'ABCDEFGHIJKL'.split('').forEach(g=>{groupStats[g]={}});
+  MATCHES.forEach(([g,md,h,a])=>{
+    if(!groupStats[g][h])groupStats[g][h]={pts:0,gf:0,ga:0,pos:[0,0,0,0]};
+    if(!groupStats[g][a])groupStats[g][a]={pts:0,gf:0,ga:0,pos:[0,0,0,0]};
+  });
+  for(let i=0;i<n;i++){
+    const res=simTournament();
+    res.r32.forEach(t=>{if(teams[t])teams[t].r32++});
+    res.r16.forEach(t=>{if(teams[t])teams[t].r16++});
+    res.qf.forEach(t=>{if(teams[t])teams[t].qf++});
+    res.sf.forEach(t=>{if(teams[t])teams[t].sf++});
+    res.final.forEach(t=>{if(teams[t])teams[t].final++});
+    if(teams[res.winner])teams[res.winner].win++;
+    Object.keys(res.gs).forEach(g=>{
+      res.gs[g].forEach((t,pos)=>{
+        const s=groupStats[g][t.name];
+        s.pts+=t.pts;s.gf+=t.gf;s.ga+=t.ga;
+        s.pos[pos]++;
+      });
+    });
+  }
+  return{teams,n,groupStats};
+}
+
+// ═══════════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════════
+function renderPredictions(mc){
+  const el=document.getElementById('predictions');
+  const rounds=['r32','r16','qf','sf','final','win'];
+  const roundLabels=['R32','R16','QF','SF','Final','Win'];
+
+  // Sort teams by win probability, then final, then sf, etc.
+  const sorted=Object.entries(mc.teams).map(([name,d])=>({name,...d}))
+    .sort((a,b)=>(b.win-a.win)||(b.final-a.final)||(b.sf-a.sf)||(b.qf-a.qf)||(b.r16-a.r16)||(b.r32-a.r32));
+
+  const winner=sorted[0];
+
+  // Color function: sqrt scaling for better contrast at low values
+  function cellStyle(count,n){
+    const pct=count/n*100;
+    const intensity=Math.pow(pct/100,0.45);
+    const r=Math.round(27+(1-intensity)*(244-27));
+    const g=Math.round(40+(1-intensity)*(241-40));
+    const b=Math.round(56+(1-intensity)*(235-56));
+    const textColor=intensity>0.55?'#fff':'#1a1a1a';
+    return`background:rgb(${r},${g},${b});color:${textColor}`;
+  }
+
+  el.innerHTML=`
+    <div class="winner-card">
+      <div class="winner-label">Predicted Winner</div>
+      <span class="winner-flag">${FLAGS[winner.name]||''}</span>
+      <div class="winner-team">${winner.name}</div>
+      <div class="winner-pct">${(winner.win/mc.n*100).toFixed(1)}% of ${mc.n.toLocaleString()} simulations</div>
+    </div>
+
+    <div class="pred-section">
+      <div class="pred-title">Tournament Advancement Probabilities</div>
+      <div class="heatmap-wrap">
+        <table class="heatmap">
+          <thead><tr>
+            <th class="hm-rank">#</th>
+            <th class="hm-team">Team</th>
+            ${roundLabels.map(l=>`<th class="hm-round">${l}</th>`).join('')}
+          </tr></thead>
+          <tbody>
+            ${sorted.map((t,i)=>{
+              return`<tr>
+                <td class="hm-rank">${i+1}</td>
+                <td class="hm-team"><span class="hm-flag">${FLAGS[t.name]||''}</span><span class="hm-name">${t.name}</span></td>
+                ${rounds.map(r=>{
+                  const count=t[r];
+                  const pct=(count/mc.n*100);
+                  const display=pct>=1?pct.toFixed(0)+'%':pct>=0.1?pct.toFixed(1)+'%':pct>0?'<1%':'—';
+                  return`<td class="hm-cell" style="${cellStyle(count,mc.n)}">${display}</td>`;
+                }).join('')}
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function renderGroups(mc){
+  const grid=document.getElementById('groupsGrid');
+  grid.innerHTML='';
+  'ABCDEFGHIJKL'.split('').forEach(g=>{
+    const gs=mc.groupStats[g];
+    const teams=Object.entries(gs).map(([name,s])=>({
+      name,
+      avgPts:s.pts/mc.n,
+      avgGF:s.gf/mc.n,
+      avgGA:s.ga/mc.n,
+      avgGD:(s.gf-s.ga)/mc.n,
+      pos:s.pos
+    }));
+    teams.sort((a,b)=>b.avgPts-a.avgPts||b.avgGD-a.avgGD||b.avgGF-a.avgGF);
+    const matches=MATCHES.filter(m=>m[0]===g);
+    const card=document.createElement('div');card.className='group-card';
+    card.innerHTML=`
+      <div class="group-header"><div class="group-label">Group ${g}</div></div>
+      <table class="standings"><thead><tr><th></th><th>Team</th><th class="r">Avg Pts</th><th class="r">Avg GD</th><th class="r">1st %</th></tr></thead>
+      <tbody>${teams.map((t,i)=>{
+        const pFirst=t.pos[0]/mc.n*100,pSecond=t.pos[1]/mc.n*100,pThird=t.pos[2]/mc.n*100;
+        const pQual=pFirst+pSecond;
+        const pc=pQual>=50?pFirst>=pSecond?'pos-1':'pos-2':pThird>=30?'pos-3':'pos-4';
+        const mk=pQual>=50?'<span class="pos-marker q"></span>':pThird>=30?'<span class="pos-marker m"></span>':'';
+        const gs2=t.avgGD>=0?'+':'';const gc=t.avgGD>=0?'pos':'neg';
+        return`<tr class="${pc}"><td>${mk}${i+1}</td><td><div class="team-cell"><span class="flag">${FLAGS[t.name]||''}</span><span class="team-name">${t.name}</span></div></td><td class="r"><span class="xpts">${t.avgPts.toFixed(1)}</span></td><td class="r"><span class="xgd ${gc}">${gs2}${t.avgGD.toFixed(1)}</span></td><td class="r">${pFirst.toFixed(0)}%</td></tr>`;
+      }).join('')}</tbody></table>
+      <button class="matches-toggle open" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">Match predictions</button>
+      <div class="match-list open">${[1,2,3].map(md=>{
+        const mdM=matches.filter(m=>m[1]===md);
+        return`<div class="match-md">Matchday ${md}</div>`+mdM.map((m)=>{
+          const [,,h,a,xgH,xgA,actual]=m;
+          const mk=matchKey(m);
+          const played=actual!==null&&actual!==undefined;
+          if(played){
+            const actOutcome=actual[0]>actual[1]?'W':actual[0]===actual[1]?'D':'L';
+            const predOutcome=xgH>xgA?'W':xgH===xgA?'D':'L';
+            const outcomeMatch=actOutcome===predOutcome;
+            const scoreLikelihood=(poissonPmf(actual[0],xgH)*poissonPmf(actual[1],xgA)*100);
+            const outcomeLabel=outcomeMatch?'outcome ✓':'outcome ✗';
+            const outcomeClass=outcomeMatch?'acc-correct':'acc-wrong';
+            const mls=mostLikelyScore(xgH,xgA);
+            const mlsMatch=mls.h===actual[0]&&mls.a===actual[1];
+            const mlsGDMatch=!mlsMatch&&(mls.h-mls.a)===(actual[0]-actual[1]);
+            const mlsClass=mlsMatch?'acc-correct':mlsGDMatch?'acc-partial':'acc-wrong';
+            const mlsLabel=mlsMatch?'✓':mlsGDMatch?'~':'✗';
+            return`<div class="match-row played" data-mk="${mk}"><div class="match-team"><span class="mflag">${FLAGS[h]||''}</span><span class="mname">${h}</span></div><div class="match-xg"><div class="match-actual">${actual[0]} — ${actual[1]}</div><div class="xg-label" style="color:var(--qualify)">Final result</div><div class="match-accuracy">xG was <span class="acc-xg">${xgH.toFixed(2)} — ${xgA.toFixed(2)}</span> · <span class="acc-outcome ${outcomeClass}">${outcomeLabel}</span> · P(${actual[0]}–${actual[1]}) = ${scoreLikelihood.toFixed(1)}%</div><div class="match-accuracy">predicted <span class="acc-xg">${mls.h}–${mls.a}</span> (${mls.pct.toFixed(1)}%) <span class="acc-outcome ${mlsClass}">${mlsLabel}</span></div><div><button class="score-clear" onclick="clearResult('${mk}')">✕ Clear</button></div></div><div class="match-team away"><span class="mname">${a}</span><span class="mflag">${FLAGS[a]||''}</span></div></div>`;
+          }
+          const adjH=ADJ[h]||{att:1,def:1},adjA=ADJ[a]||{att:1,def:1};
+          const axgH=xgH*adjH.att*adjA.def,axgA=xgA*adjA.att*adjH.def;
+          const p=matchProbs(axgH,axgA);
+          const mls=mostLikelyScore(axgH,axgA);
+          const hasAdj=Math.abs(axgH-xgH)>0.005||Math.abs(axgA-xgA)>0.005;
+          const origLine=hasAdj?`<div class="xg-original">pre-tournament: ${xgH.toFixed(2)} — ${xgA.toFixed(2)}</div>`:'';
+          const xgLabel='predicted xG';
+          return`<div class="match-row" data-mk="${mk}"><div class="match-team"><span class="mflag">${FLAGS[h]||''}</span><span class="mname">${h}</span></div><div class="match-xg"><div class="xg-vals">${axgH.toFixed(2)} — ${axgA.toFixed(2)}</div><div class="xg-label">${xgLabel} · P(${mls.h}–${mls.a}) = ${mls.pct.toFixed(1)}%</div>${origLine}<div class="xg-result">W ${(p.win*100).toFixed(0)}% · D ${(p.draw*100).toFixed(0)}% · L ${(p.loss*100).toFixed(0)}%</div><div class="score-input-wrap"><input class="score-input" id="sh_${mk}" type="number" min="0" max="20" placeholder="–"><span class="score-dash">—</span><input class="score-input" id="sa_${mk}" type="number" min="0" max="20" placeholder="–"><button class="score-save" onclick="submitResult('${mk}')">Save</button></div></div><div class="match-team away"><span class="mname">${a}</span><span class="mflag">${FLAGS[a]||''}</span></div></div>`;
+        }).join('');
+      }).join('')}</div>`;
+    grid.appendChild(card);
+  });
+}
+
+function renderThirds(mc){
+  const el=document.getElementById('thirdsSection');
+  // Derive 3rd-placed team from each group's MC-averaged standings
+  const thirds=[];
+  'ABCDEFGHIJKL'.split('').forEach(g=>{
+    const gs=mc.groupStats[g];
+    const teams=Object.entries(gs).map(([name,s])=>({
+      name,
+      avgPts:s.pts/mc.n,
+      avgGF:s.gf/mc.n,
+      avgGA:s.ga/mc.n,
+      avgGD:(s.gf-s.ga)/mc.n
+    }));
+    teams.sort((a,b)=>b.avgPts-a.avgPts||b.avgGD-a.avgGD||b.avgGF-a.avgGF);
+    const third=teams[2];
+    thirds.push({...third,group:g});
+  });
+  // Rank by FIFA criteria: points → GD → GF
+  thirds.sort((a,b)=>b.avgPts-a.avgPts||b.avgGD-a.avgGD||b.avgGF-a.avgGF);
+
+  el.innerHTML=`
+    <div class="thirds-title">Third-Placed Teams Ranking</div>
+    <div class="thirds-sub">Best 8 of 12 qualify for the Round of 32 · ranked by FIFA criteria (Pts → GD → GF)</div>
+    <div class="thirds-card">
+      <table class="thirds-table">
+        <thead><tr><th>#</th><th>Team</th><th>Group</th><th class="r">Avg Pts</th><th class="r">Avg GD</th><th class="r">Avg GF</th></tr></thead>
+        <tbody>${thirds.map((t,i)=>{
+          const rowClass=i<8?'qualifies':'eliminated';
+          const gds=t.avgGD>=0?'+':'';
+          return`<tr class="${rowClass}"><td style="padding-left:12px;color:var(--muted);font-size:11px">${i+1}</td><td><div class="team-cell"><span class="flag">${FLAGS[t.name]||''}</span><span class="team-name">${t.name}</span></div></td><td style="color:var(--muted);font-size:12px">${t.group}</td><td class="r"><span class="xpts">${t.avgPts.toFixed(2)}</span></td><td class="r">${gds}${t.avgGD.toFixed(2)}</td><td class="r">${t.avgGF.toFixed(2)}</td></tr>`;
+        }).join('')}</tbody>
+      </table>
+    </div>`;
+}
+
+function renderMethodology(){
+  const el=document.getElementById('methodology');
+  const sections=[
+    {icon:'🎲',title:'Monte Carlo Simulation (100,000 runs)',body:`<p>The tournament is simulated 100,000 times from start to finish. Each simulation is a complete, independent run — group stage through knockout rounds through the final — capturing the full range of possible outcomes given what we know so far.</p><p>In each run: matches already played use their actual scorelines (locked in identically every run), while remaining group stage matches are played via Poisson random draws. Group standings are computed with full FIFA tiebreakers, 32 teams advance to the knockout bracket (top 2 per group + best 8 third-placed teams), and every knockout match from the Round of 32 through the Final is resolved. The bracket is built fresh from each simulation's group results, so variance in remaining matches naturally propagates through the entire tournament.</p><p>Results are aggregated across all runs: for each team, we count how often they reached each round (R32, R16, QF, SF, Final) and how often they won the tournament. Group stage standings show averaged points, goal difference, and position frequencies across all simulations. 100,000 runs provides strong statistical stability — probabilities typically converge within ±0.15 percentage points.</p>`},
+    {icon:'⚽',title:'Group Stage Model',body:`<p><strong>Actual results are locked in.</strong> Matches that have already been played use their real scorelines — goals, points, and goal difference are fixed. Only remaining matches are simulated.</p><p>For unplayed matches, the base xG predictions are adjusted using a <strong>Bayesian correction</strong> derived from actual tournament performance. For each team, the model computes how their actual goals scored and conceded compare to the pre-tournament xG predictions, then applies a shrinkage-dampened multiplicative correction to remaining match xG values. The shrinkage factor increases with matches played (20% per match, capped at 60%), preventing overreaction to single-game outliers while still letting sustained over- or under-performance shift predictions.</p><p>Adjusted goals are drawn independently from Poisson distributions:</p><ul><li>Home goals ~ Poisson(adjusted home xG)</li><li>Away goals ~ Poisson(adjusted away xG)</li></ul><p>Points are assigned (3 for a win, 1 for a draw), and groups are ranked by points → goal difference → goals scored.</p><p>The top 2 from each group advance automatically. The 12 third-placed teams are ranked across all groups, and the best 8 qualify — producing 32 teams for the knockout stage.</p>`},
+    {icon:'📊',title:'Pre-Tournament xG Calculation',body:`<p>The per-match xG predictions used as the baseline for all simulations are <strong>pre-tournament estimates</strong>, not live model outputs. They combine five public data sources into a single expected goals figure for each team in each match.</p><p><strong>1. World Cup Qualifying xG (35%)</strong> — sourced from <a href="https://xgscore.io" target="_blank">xGscore.io</a>, which tracks expected goals using a shot-based model (shot location, angle, body part, assist type, game state). Each team\'s xG created and xG conceded per match across their qualifying campaign was used. This was the heaviest-weighted input because qualifying xG reflects actual competitive performance over 6–12 matches.</p><p><strong>2. Editorial Match Predictions (25%)</strong> — predicted scorelines from ESPN ("Picking every single game of the 2026 World Cup" by Ryan O\'Hanlon), Big D Soccer ("Every 2026 World Cup Group Stage Game, Predicted" by Drew Epperley), and Bleacher Report (group projection rankings by Joe Tansey). Predicted scores were converted to implied xG by averaging across sources (typically ~0.1–0.2 below predicted goals, since xG runs below actual goals due to finishing variance).</p><p><strong>3. Pre-Tournament Market Odds (20%)</strong> — outright winner and group winner odds from FanDuel and Polymarket, converted to implied probabilities and mapped to team strength tiers with base xG ranges (Elite: 2.0–2.5, Strong: 1.6–2.0, Competitive: 1.3–1.7, Mid-tier: 0.9–1.3, Lower: 0.6–0.9, Debutants: 0.3–0.6). Market odds are useful for cross-confederation matchups where teams haven\'t played recently.</p><p><strong>4. Historical Tournament Adjustments (10%)</strong> — based on 2014/2018/2022 World Cup data: tournament compression (~2.5 goals/game average), matchday weighting (MD1 xG discounted ~5%, MD3 boosted ~5%), host advantage (Mexico +0.15, USA/Canada +0.10 for home matches), and mismatch inflation for the expanded 48-team format.</p><p><strong>5. Opponent-Adjusted Defensive Calibration (10%)</strong> — each team\'s xG is adjusted by their opponent\'s defensive record: <code>Match xG(A) = (A\'s attacking base × 0.6) + (B\'s defensive weakness × 0.4)</code>, where defensive weakness is the opponent\'s xGA/match normalized to the tournament average of 1.25 xGA/match. This inflates xG against weak defenses (e.g., Germany 3.20 vs Curaçao) and compresses it against strong ones (e.g., Brazil 1.95 vs Morocco).</p>`},
+    {icon:'🏆',title:'Knockout Stage Model',body:`<p>For knockout matches, xG is computed dynamically for any pair of teams using strength ratings derived from a <strong>three-source blend</strong>, then adjusted by the same Bayesian correction used in the group stage.</p><p><strong>Source 1: FIFA World Ranking (40% weight)</strong></p><p>June 2026 official rankings for all 48 teams, converted to attack/defense values via calibrated power-law curves:</p><ul><li><code>attack = 2.45 × (1/rank)^0.22</code> — maps rank 1 → 2.45, rank 10 → 1.58, rank 50 → 1.14</li><li><code>defense = 0.70 + 0.35 × (rank/85)^0.5</code> — maps rank 1 → 0.738, rank 50 → 0.968, rank 85 → 1.05</li></ul><p>These curves were hand-calibrated to produce realistic xG ranges: top teams score ~2+ xG vs average opponents while bottom-ranked teams score ~0.8–1.0. The exponents (0.22 for attack, 0.5 for defense) control the steepness — attack drops off gradually for top teams (difference between rank 1 and 5 is smaller than between rank 40 and 60), while defense scales more linearly.</p><p><strong>Source 2: Betting odds (35% weight)</strong></p><p>Pre-tournament outright winner probabilities for the top 15 contenders from FanDuel and Polymarket, converted to attack/defense via:</p><ul><li><code>attack = 1.20 + 0.065 × √(pct × 100)</code> — maps 19% → 4.03, 10% → 3.25, 1% → 1.85. These raw values are intentionally high because this source carries only 35% weight in the final blend; the elevated scale gives betting odds meaningful pull against the more conservative FIFA ranking source.</li><li><code>defense = 0.65 + 0.30 / (1 + pct/5)</code> — maps 19% → 0.71, 10% → 0.75, 1% → 0.90</li></ul><p>Teams without explicit betting odds (33 of 48) fall back to their FIFA ranking with a <strong>5% attack discount</strong> (<code>fifaToAtt × 0.95</code>) and <strong>2% defense penalty</strong> (<code>fifaToDef × 1.02</code>), reflecting the assumption that unlisted teams are slightly weaker than their ranking alone suggests.</p><p><strong>Source 3: Group stage xG (25% weight)</strong></p><p>Within-group relative strengths derived via <strong>iterative proportional fitting</strong> on all 72 match xG values:</p><ul><li>Initialize all teams with attack=1.3, defense=1.0</li><li>For 30 iterations: recompute each team\'s attack as mean(xG_for / opponent_defense) and defense as mean(xG_against / opponent_attack), then normalize defense to average 1.0</li><li>This decomposes the xG matrix into per-team attack and defense factors that best explain the predicted scorelines within each group</li></ul><p>Limitation: this source can only compare teams within the same group, not across groups.</p><p><strong>Final blend and knockout xG formula:</strong></p><p><code>att(team) = fifaAtt × 0.40 + oddsAtt × 0.35 + groupXGAtt × 0.25</code><br><code>def(team) = fifaDef × 0.40 + oddsDef × 0.35 + groupXGDef × 0.25</code></p><p>For each knockout match:</p><p><code>xG(A) = max(0.25, att(A) × adjAtt(A) × def(B) × adjDef(B) × stageCompression)</code></p><p>The <strong>0.25 floor</strong> prevents any team from having near-zero xG even in extreme mismatches. Stage compression factors (heuristic, not empirically calibrated):</p><ul><li>Round of 32: ×0.95 · Round of 16: ×0.93 · Quarterfinals: ×0.90</li><li>Semifinals: ×0.88 · Final: ×0.87</li></ul><p>These reflect the empirical observation that knockout matches at World Cups tend to be more tactical and lower-scoring than group games, with the effect intensifying in later rounds.</p><p><strong>Extra time and penalties:</strong></p><ul><li>If regulation ends drawn, extra time is simulated with <code>xG_ET = xG_regulation × 0.35</code> (30 min of ET ≈ 35% of 90 min regulation, adjusted slightly for fatigue/tactical caution)</li><li>If still drawn after ET, penalties are a 50/50 coin flip — matching the historical base rate across World Cup penalty shootouts</li></ul>`},
+    {icon:'🧮',title:'Poisson Model & Match Probability Details',body:`<p>All match simulations use independent Poisson distributions for each team\'s goals, which is the standard statistical model for football scoring.</p><p><strong>Poisson random draw (simulation):</strong> For each simulated match, goals are drawn via the inverse-transform method: <code>draw k from Poisson(λ)</code> where λ is the team\'s (adjusted) xG for that match. Goals for each team are drawn independently.</p><p><strong>Analytical match probabilities (display):</strong> Win/draw/loss probabilities shown on match cards are computed by summing over all scoreline combinations up to <code>maxGoals = 7</code>:</p><p><code>P(W) = Σ P(h,a) for all h > a</code><br><code>P(D) = Σ P(h,a) for all h = a</code><br><code>P(L) = Σ P(h,a) for all h < a</code></p><p>where <code>P(h,a) = poissonPmf(h, xgH) × poissonPmf(a, xgA)</code> and <code>poissonPmf(k, λ) = e^(-λ) × λ^k / k!</code></p><p>Truncating at 7 goals is standard — the probability of any team scoring 8+ in a single match is negligible (<0.01% for xG under 3.5).</p><p><strong>Most likely scoreline:</strong> Computed by finding <code>argmax P(h,a)</code> over all combinations up to <code>maxGoals = 6</code>. This tends to produce conservative predictions (1–0, 1–1, 0–0) because Poisson mass concentrates near zero. The most likely single scoreline typically has only 10–20% probability — the majority of probability mass is spread across many other scorelines.</p><p><strong>Score likelihood for played matches:</strong> <code>P(actual score) = poissonPmf(actualH, xgH) × poissonPmf(actualA, xgA) × 100%</code>. This measures how likely the model considered the exact scoreline that occurred. Values of 5–15% are typical for correctly-predicted outcomes; values under 1% indicate the result was a significant surprise to the model.</p><p><strong>Group stage tiebreakers:</strong> When teams are tied on points within a group, the model applies FIFA tiebreaker rules: (1) head-to-head points among tied teams, (2) head-to-head goal difference, (3) head-to-head goals scored, (4) overall goal difference, (5) overall goals scored. This is implemented via a mini-table constructed from the simulated match results among the tied teams.</p>`},
+    {icon:'📐',title:'Bracket Structure',body:`<p>The bracket faithfully implements the official FIFA match schedule (Matches 73–104) as published in the tournament regulations. All 16 Round of 32 matchups, 8 Round of 16 pairings, and the full QF → SF → Final wiring are hardcoded to match the FIFA-published bracket.</p><p><strong>Fixed R32 matchups</strong> (non-3rd-place): 2A vs 2B, 1F vs 2C, 1C vs 2F, 2E vs 2I, 2K vs 2L, 1H vs 2J, 1J vs 2H, 2D vs 2G.</p><p><strong>3rd-placed team assignments</strong>: Eight group winners (1A, 1B, 1D, 1E, 1G, 1I, 1K, 1L) each play a qualifying 3rd-placed team. Which 3rd plays which winner depends on which 8 of 12 groups produce qualifying thirds — governed by FIFA Annex C (495 possible combinations). All 495 combinations are hardcoded as a direct lookup table extracted from the official tournament regulations, ensuring exact accuracy for every possible scenario.</p><p><strong>Bracket halves:</strong></p><ul><li><strong>Top half (SF1):</strong> Germany, France, Spain path — includes group winners E, F, I, H and runners-up A, B, C, E, I, J, K, L</li><li><strong>Bottom half (SF2):</strong> Argentina, England path — includes group winners A, C, D, G, J, K, L, B and runners-up D, F, G, H</li></ul><p>This means Spain and France can meet as early as the semifinals (top half), while Argentina and England can meet in the other semifinal (bottom half). All four can only meet in the final.</p>`},
+    {icon:'🔄',title:'Bayesian In-Tournament Adjustment',body:`<p>As matches are played, the model updates its predictions for remaining games using a <strong>shrinkage-based Bayesian correction with opponent-strength normalization</strong>. This section documents all assumptions, heuristics, and their rationale.</p><p><strong>Core approach — opponent-normalized multiplicative adjustment with shrinkage:</strong></p><ul><li>For each team with at least one played match, compute the ratio of actual performance to predicted xG, <strong>normalized by opponent strength</strong>. Both actual goals and predicted xG are divided by the opponent\'s relevant rating before computing the ratio. For attack: divide by opponent\'s defense rating (<code>RATINGS.def</code>). For defense: divide by opponent\'s attack rating (<code>RATINGS.att</code>). This ensures that scoring 7 against a weak defense produces a smaller adjustment than scoring 7 against a strong defense.</li><li>Apply shrinkage: <code>adjustment = 1.0 + shrinkage × (ratio - 1.0)</code>. This pulls the raw ratio toward 1.0 (no change), with the shrinkage parameter controlling how much actual performance is trusted vs. the pre-tournament prior.</li><li>Multiply remaining match xG values by the relevant adjustment factors: home xG is scaled by the home team\'s attack factor and the away team\'s defense factor, and vice versa.</li></ul><p><strong>Opponent-strength normalization detail:</strong></p><p>For a team that played against opponent O:</p><ul><li><code>normalized_goals_scored = actual_goals / RATINGS.def[O]</code></li><li><code>normalized_xG_for = predicted_xG / RATINGS.def[O]</code></li><li><code>normalized_goals_conceded = actual_goals_conceded / RATINGS.att[O]</code></li><li><code>normalized_xG_against = predicted_xGA / RATINGS.att[O]</code></li></ul><p>The ratios are then <code>attack_ratio = Σ normalized_goals_scored / Σ normalized_xG_for</code> across all played matches, and similarly for defense. Because the same divisor applies to both numerator and denominator, the normalization only changes the ratio when a team has played opponents of varying strength — it weights strong-opponent data more heavily than weak-opponent data.</p><p><strong>Specific parameter choices (heuristics):</strong></p><ul><li><strong>Shrinkage = 0.2 × matches played, capped at 0.6.</strong> After 1 match, only 20% of the observed deviation from expectation feeds into the adjustment. After 3 matches (full group stage), 60%. The cap at 0.6 means the pre-tournament prior always retains at least 40% influence, reflecting the fact that 3 matches is still a small sample. These values are not empirically calibrated against historical tournament data — they are heuristics chosen to be conservative enough to avoid overreaction while being aggressive enough to matter for clear over/underperformers.</li><li><strong>Attack and defense treated independently.</strong> In reality, a team\'s attacking and defensive performance are correlated (e.g., an aggressive pressing style affects both). Treating them independently is a simplification that keeps the model tractable.</li></ul><p><strong>Statistical grounding:</strong></p><ul><li><strong>Shrinkage toward a prior</strong> is a foundational Bayesian concept, central to empirical Bayes and James-Stein estimation. Every serious sports projection system (FiveThirtyEight/538 SPI, ELO ratings, Dixon-Coles models) uses some version of this.</li><li><strong>Multiplicative corrections to expected performance</strong> are standard in hierarchical sports models. The ratio-of-observed-to-expected approach mirrors how xG-based rating systems update team strengths after each match.</li><li><strong>Opponent-strength normalization</strong> is a simplified form of the adjustments made in full Poisson regression (GLM) or Bayesian hierarchical models (Gamma-Poisson conjugate updates). A more rigorous approach would fit an explicit attack/defense GLM on all observed matches or use Gamma priors on each team\'s Poisson λ with conjugate posterior updates conditioned on opponent strength. These approaches would produce more statistically principled estimates but are substantially more complex to implement in vanilla JavaScript.</li><li>The specific shrinkage values (0.2/match, 0.6 cap) are <strong>not calibrated</strong> against historical data. Rigorous calibration would require pre-tournament xG predictions from past World Cups (2018, 2022) or a larger corpus of international tournament matches, then optimizing the shrinkage to minimize prediction error (e.g., via Brier score or log-loss) on subsequent matchdays.</li></ul><p><strong>How to interpret the effect:</strong> Germany scored 7 against Curaçao (xG 3.20). Without opponent normalization, the raw attack ratio would be 7/3.20 = 2.19×. With normalization by Curaçao\'s defense rating (~1.05), both goals and xG are divided by 1.05, producing a similar but slightly dampened ratio. The key benefit appears when a team faces opponents of varying quality — strong-opponent performances carry proportionally more weight than weak-opponent performances in the aggregated ratio.</p>`},
+    {icon:'⚠️',title:'Limitations',body:`<p>Predictions update as the tournament progresses via Bayesian adjustments to team strength, but several factors are not modeled:</p><ul><li><strong>Injuries, suspensions, and squad rotation</strong> — player availability changes match dynamics significantly</li><li><strong>Tactical adjustments</strong> — teams adapt strategy based on what they need from each match</li><li><strong>Momentum and form</strong> — the model treats each match independently with no carry-over effects beyond aggregate strength adjustments</li><li><strong>Referee decisions and VAR</strong> — match-altering calls are inherently unpredictable</li><li><strong>Weather and altitude</strong> — Mexico City's 2,240m elevation affects performance</li></ul><p>The Bayesian adjustment normalizes by opponent strength and uses shrinkage to avoid overreacting to small samples, but remains a simplified approximation. A full Poisson GLM or Gamma-Poisson hierarchical model would provide more principled estimates. Base team ratings (FIFA ranking, betting odds, pre-tournament xG) remain fixed — only the tournament performance correction updates. Penalty shootouts are modeled as 50/50, ignoring any team quality bias in shootout outcomes.</p><p style="margin-top:12px;font-style:italic">Data sourced from xGscore.io, ESPN, Big D Soccer, Bleacher Report, FanDuel, and Polymarket. Not a betting recommendation.</p>`},
+  ];
+  el.innerHTML=`<div class="method-heading">Methodology & Sources</div>`+
+    sections.map(s=>`<div class="method-card"><div class="method-card-header" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')"><span class="method-icon">${s.icon}</span>${s.title}</div><div class="method-body">${s.body}</div></div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════
+//  DYNAMIC RESULT INPUT
+// ═══════════════════════════════════════════════════
+function submitResult(mk){
+  const hEl=document.getElementById('sh_'+mk);
+  const aEl=document.getElementById('sa_'+mk);
+  if(!hEl||!aEl)return;
+  const hG=parseInt(hEl.value),aG=parseInt(aEl.value);
+  if(isNaN(hG)||isNaN(aG)||hG<0||aG<0)return;
+  const m=MATCHES.find(m=>matchKey(m)===mk);
+  if(m){m[6]=[hG,aG];saveResult(mk,[hG,aG]);markDirty()}
+}
+function clearResult(mk){
+  const m=MATCHES.find(m=>matchKey(m)===mk);
+  if(!m)return;
+  m[6]=null;saveResult(mk,null);
+  const [,,h,a,xgH,xgA]=m;
+  const adjH=ADJ[h]||{att:1,def:1},adjA=ADJ[a]||{att:1,def:1};
+  const axgH=xgH*adjH.att*adjA.def,axgA=xgA*adjA.att*adjH.def;
+  const p=matchProbs(axgH,axgA);
+  const mls=mostLikelyScore(axgH,axgA);
+  const hasAdj=Math.abs(axgH-xgH)>0.005||Math.abs(axgA-xgA)>0.005;
+  const origLine=hasAdj?`<div class="xg-original">pre-adjustment: ${xgH.toFixed(2)} — ${xgA.toFixed(2)}</div>`:'';
+  const xgLabel='predicted xG';
+  const row=document.querySelector(`[data-mk="${mk}"]`);
+  if(row){
+    row.className='match-row';
+    row.innerHTML=`<div class="match-team"><span class="mflag">${FLAGS[h]||''}</span><span class="mname">${h}</span></div><div class="match-xg"><div class="xg-vals">${axgH.toFixed(2)} — ${axgA.toFixed(2)}</div><div class="xg-label">${xgLabel} · P(${mls.h}–${mls.a}) = ${mls.pct.toFixed(1)}%</div>${origLine}<div class="xg-result">W ${(p.win*100).toFixed(0)}% · D ${(p.draw*100).toFixed(0)}% · L ${(p.loss*100).toFixed(0)}%</div><div class="score-input-wrap"><input class="score-input" id="sh_${mk}" type="number" min="0" max="20" placeholder="–"><span class="score-dash">—</span><input class="score-input" id="sa_${mk}" type="number" min="0" max="20" placeholder="–"><button class="score-save" onclick="submitResult('${mk}')">Save</button></div></div><div class="match-team away"><span class="mname">${a}</span><span class="mflag">${FLAGS[a]||''}</span></div>`;
+  }
+  markDirty();
+}
+function runAndRender(){
+  document.getElementById('recalcBar').classList.remove('visible');
+  document.getElementById('predictions').innerHTML='<div class="loading">Re-running 100,000 simulations<span class="loading-dot">.</span><span class="loading-dot">.</span><span class="loading-dot">.</span></div>';
+  document.getElementById('groupsGrid').innerHTML='<div class="loading">Simulating group stages<span class="loading-dot">.</span><span class="loading-dot">.</span><span class="loading-dot">.</span></div>';
+  const playedN=MATCHES.filter(m=>m[6]!==null&&m[6]!==undefined).length;
+  document.getElementById('playedCount').textContent=playedN;
+  document.getElementById('remainingCount').textContent=72-playedN;
+  dirty=false;
+  requestAnimationFrame(()=>{
+    setTimeout(()=>{
+      computeTournamentAdjustments();
+      const mc=runMC(100000);
+      renderPredictions(mc);
+      renderGroups(mc);
+      renderThirds(mc);
+    },50);
+  });
+}
+
+// ═══════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════
+renderMethodology();
+const playedN=MATCHES.filter(m=>m[6]!==null&&m[6]!==undefined).length;
+document.getElementById('playedCount').textContent=playedN;
+document.getElementById('remainingCount').textContent=72-playedN;
+// Run MC after a frame so loading message shows
+requestAnimationFrame(()=>{
+  setTimeout(()=>{
+    const mc=runMC(100000);
+    renderPredictions(mc);
+    renderGroups(mc);
+    renderThirds(mc);
+  },50);
+});
+</script>
+</body>
+</html>
