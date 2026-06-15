@@ -12,7 +12,8 @@ This repository contains a browser-ready HTML dashboard that simulates the full 
 - `predictions/` — output drafts of the prediction dashboard.
   - `draft_2026-06-10_group-matches-only.html` — early draft showing match-level predictions.
   - `draft_2026-06-11_incl-group-standings.html` — draft including projected group standings.
-  - `draft_2026-06-11_incl-winner.html` — full current prediction page with winner probabilities.
+  - `draft_2026-06-11_incl-winner.html` — full pre-tournament prediction page with winner probabilities.
+  - `draft_2026-06-14-incl-actual-results.html` — live tracker that locks in actual results, allows editing/saving match scores in your browser (localStorage), and simulates remaining matches.
 
 ## What it does
 
@@ -41,7 +42,7 @@ The HTML dashboard:
 
 ## Usage
 
-Open `predictions/draft_2026-06-11_incl-winner.html` in a modern web browser. The page runs the simulation in-browser and renders the prediction dashboard automatically.
+Open `predictions/draft_2026-06-14-incl-actual-results.html` in a modern web browser for the live tracker (locks actual scores, supports editing/saving scores locally, and lets you re-run the Monte Carlo simulations after changes). Alternatively, `predictions/draft_2026-06-11_incl-winner.html` contains the pre-tournament snapshot and full simulation UI.
 
 ## Notes
 
